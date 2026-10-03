@@ -2,7 +2,7 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-03 (S0 close-out patch)
+**Last updated:** 2026-10-04 (S1 implemented; awaiting local verification)
 **Git baseline:** `93f1abb` "S0: foundations" (branch `master`, no remote configured)
 **Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
 
@@ -13,7 +13,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | Stage | Name | Status | Completed | Commit | Notes |
 |:---|:---|:---:|:---:|:---:|:---|
 | **S0** | Foundations (repository, configuration, tooling) | ✅ Done (local) | 2026-10-03 | `93f1abb` + close-out | CI not yet run (no remote). `make test` not run (direct pytest equivalent used). See S0 log. |
-| **S1** | Data ingestion, validation and quality flags | Not started | - | - | Needs `data/raw/archive.zip` (see "Exact next step") |
+| **S1** | Data ingestion, validation and quality flags | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S1 log). Run the local verification commands, then commit as `S1: ingestion, validation, flags`. |
 | **S2** | Security master and universe (eligibility) layer | Not started | - | - | - |
 | **S3** | Adjusted price series and returns | Not started | - | - | - |
 | **S4** | Label generation | Not started | - | - | - |
@@ -73,13 +73,51 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 8. Environment: Python 3.14 (CI covers 3.11/3.12 only); the venv was created with `--system-site-packages` (global packages can leak in); the project lives under OneDrive. LightGBM/SHAP wheel availability on 3.14 is unverified (matters in S8/S14).
 9. Not present (not required by the S0 spec): `requirements-lock.txt`, `.pre-commit-config.yaml`, `Dockerfile` (S17).
 
+### S1: Data ingestion, validation and quality flags: implemented (awaiting local verification)
+
+**Delivered:**
+- `src/nasdaq100/data/ingest.py`: extract CSV from `data/raw/archive.zip` (CSV bytes only, no `extractall`), SHA-256 of zip and CSV, `MANIFEST.json`, frozen-dataset guard (`FrozenDatasetError`), exact-column check (`SchemaError`), explicit dtypes, rename per §II.1, sort by (`ticker`,`date`), bronze + calendar parquet. Helpers `read_manifest`, `data_hash`.
+- `src/nasdaq100/data/flags.py`: `add_flags` (silver = bronze + `n_obs` + 5 `flag_*`), `corp_action_events`. Rows are never removed.
+- `src/nasdaq100/data/validate.py`: 9 hard checks (schema/dtypes, NaN, duplicates, sort order, prices > 0, 3 OHLC checks, internal calendar gaps), soft checks (dimensions vs `data_expectations.yaml`, survivorship indicator, zero-volume, tick noise by year, largest returns, GOOG/GOOGL correlation), `validation_report.json`, `docs/data_quality_report.md` (`SURVIVOR-BIASED` statement), `run_validate`.
+- `src/nasdaq100/utils/calendar.py`: `build_calendar`, `TradingCalendar` (`idx_of`, `date_at`, `offset`, `rebalance_dates`), module-level `rebalance_dates(cfg, calendar)`.
+- CLI: `ingest` and `validate` commands (config is still validated first; errors exit 1).
+- Tests: `tests/unit/test_{calendar,flags,ingest,validate,cli_s1}.py`, `tests/fixtures/s1_prices.py` (clean generator that triggers no flag), `tests/integration/test_s1_real_data.py` (`needs_data`). Three existing tests in `tests/unit/test_cli.py` used `ingest` as the "unimplemented command" example; they now use `build-master`.
+
+**Measured on the real archive (all match guide section I.3 / `data_expectations.yaml`):** 514,075 rows; 100 tickers; 6,571 calendar dates; 2000-01-03 to 2026-02-18; zip SHA-256 `e70ce876...e8d2`; 0 hard-check failures; 0 tickers end early (survivorship); `close < 5` rows 48,646; zero-volume rows 1,594 (AZN 1,459); 27 rows with |close return| > 40%; GOOG/GOOGL correlation 0.9971; `flag_corp_action_suspect` fires on KDP 2018-07-10, BKR 2017-07-05, MDLZ 2012-10-02, TMUS 2013-05-01. Flag totals: tick_noise 48,646; zero_volume 1,594; flat_bar 4,546; corp_action_suspect 19; extreme_move 30. Only soft warning: `zero_volume_share_by_ticker` (AZN), as expected.
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| Baseline (S0 close-out tree) in the assistant's sandbox | 24/24 passed | Calibration of the stand-ins below |
+| `pytest -m "not needs_data and not slow"` (sandbox) | 77 passed | 24 baseline + 53 new |
+| `pytest -m needs_data` (sandbox, real archive) | 13 passed | Full tree: 90 passed, 0 failed |
+| `python -m nasdaq100.cli ingest` / `validate` (sandbox, real archive) | Works; re-ingest is idempotent | Isolated copy of the repo layout |
+| Mutation checks | 5/5 caught | Corp-action guard, strict `<` tick threshold, frozen guard, gap check, rebalance anchor |
+| Ruff | Not run | Unavailable offline. AST check for unused imports/variables found nothing. **Run `ruff check .` locally.** |
+| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner) because wheels were unavailable offline; pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+
+**Interpretations of the guide (none change a schema):**
+1. `MANIFEST.json` top-level keys are exactly the section II.5 columns and describe the **zip** (`file_name`, `sha256`, `size_bytes`); an extra `csv` block holds the CSV's name, hash and size. `data_hash()` returns the zip hash. If only the CSV exists (no zip), the top-level entry describes the CSV.
+2. Frozen guard compares the CSV hash always and the zip hash when the manifest was written from a zip. Re-ingesting identical data leaves the manifest (and `created_at`) untouched.
+3. `rebalance_dates(cfg, calendar=None)` returns a DataFrame (`date`, `t_idx`) and takes the anchor/stride from `cfg.backtest`; the calendar defaults to `calendar.parquet`.
+4. On a hard-check failure `validate` still writes the (failed) JSON and markdown reports for diagnosis, does **not** write silver, and exits 1.
+5. `run_ingest` / `run_validate` accept optional explicit paths (default: `nasdaq100.paths` helpers) so tests run in temp directories. S0 deviation 4 (config keys `data.raw_zip`, `data.raw_csv_name` unused) is unchanged.
+6. S1 appends **no** `experiments/registry.csv` row (it produces no experiment results). Revisit if a run record for data builds is wanted.
+7. `make data` still lists the S2/S3 commands, which are stubs that exit 1: it runs `ingest` and `validate` correctly and then stops at `build-master`. Run the two S1 commands directly until S2/S3 exist.
+
+**Observations for later stages (informational):**
+- Besides the four reference events, `flag_corp_action_suspect` also fires on MSFT 2004-11-15 (special dividend), CCEP 2010-10-04 and 2016-05-31, ASML, KLAC and others, and on ~10 marginal events with a return gap of 0.03-0.04 (AZN x5, COST x3, PCAR x2) that look like large ordinary dividends. They are flags only; S2/S3 decide what to do with them.
+- `Close` and `Adj Close` are both 2-decimal rounded, so `adj_close / close` ratios are noisy at low prices (the reason for the `corp_action_min_prev_close` guard).
+
 ---
 
 ## Exact next step
 
-1. Review the close-out patch, run `pytest -m "not needs_data and not slow"` and `ruff check .` locally with the real dependencies (record results above), then commit as `S0: close-out (config layering, egg-info, needs_data hook, state file)`.
-2. S1 input: copy the frozen dataset archive to `data/raw/archive.zip` (never commit it). Expected file: 8,405,356 bytes, SHA-256 `e70ce876b218b8af9d891a3c47c471f2a039698614697c60b6be5ad32537e8d2`. On Windows PowerShell: `Get-FileHash data\raw\archive.zip -Algorithm SHA256`.
-3. Start **S1: Data ingestion, validation and quality flags** in a new Claude chat (attach the guide, this file, the repo tree, `configs/base.yaml`, the S0 modules, and the first ~20 lines of the CSV).
+1. Apply the S1 patch and run the local verification (see the hand-off message): `pytest -m "not needs_data and not slow"`, `ruff check .`, `python -m nasdaq100.cli ingest`, `python -m nasdaq100.cli validate`, `pytest -m needs_data`. Record the results in the S1 verification table above.
+2. Read `docs/data_quality_report.md` and compare it with guide section I.3 (the numbers above should match). Optionally eyeball NFLX 2002-10-18 and KDP 2018-07-10 in `data/interim/prices_silver.parquet`.
+3. Commit as `S1: ingestion, validation, flags` (include `docs/data_quality_report.md`; never commit `data/raw`, `data/interim`, `data/reports`).
+4. Then start **S2: Security master and universe (eligibility) layer** in a new chat (attach the guide, this file, the repo tree, `configs/base.yaml`, the S0/S1 modules and the first rows of `prices_silver.parquet`).
 
 ---
 
@@ -91,7 +129,12 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `configs/base.yaml` | All default parameters; `--config` override files layer on top |
 | `src/nasdaq100/config.py` | Config loader and `config_hash` |
 | `src/nasdaq100/paths.py` | All artifact path helpers (variant-namespaced) |
-| `src/nasdaq100/cli.py` | CLI entry point (`status` works; other commands are stubs until their stage) |
+| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate` work; other commands are stubs until their stage) |
 | `src/nasdaq100/utils/io.py` | Parquet I/O, registry append, run IDs |
+| `src/nasdaq100/utils/calendar.py` | Global trading calendar, `t_idx` arithmetic, rebalance dates |
+| `src/nasdaq100/data/ingest.py` | Zip -> bronze, calendar, manifest, frozen-dataset guard |
+| `src/nasdaq100/data/flags.py` | Silver flags (`n_obs`, `flag_*`) |
+| `src/nasdaq100/data/validate.py` | Hard/soft checks, validation report, data-quality report |
 | `tests/fixtures/toy_data.py` | Synthetic price and panel generators |
+| `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
 | `experiments/registry.csv` | Append-only experiment log (header only so far) |

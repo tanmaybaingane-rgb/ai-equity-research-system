@@ -9,6 +9,8 @@ import argparse
 import sys
 
 from nasdaq100.config import Config, load_config
+from nasdaq100.data.ingest import IngestError, run_ingest
+from nasdaq100.data.validate import ValidationError, run_validate
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
 
@@ -37,6 +39,36 @@ def build_config_from_args(config: str | None, overrides: list[str] | None) -> C
     replaces the base configuration.
     """
     return load_config(override_file=config, overrides=overrides)
+
+
+def cmd_ingest(cfg: Config) -> int:
+    """S1: extract/hash the frozen raw archive; write manifest, bronze table and calendar."""
+    try:
+        manifest = run_ingest()
+    except (IngestError, FileNotFoundError) as e:
+        logger.error(f"ingest failed: {e}")
+        return 1
+    print(
+        f"Ingested {manifest['rows']:,} rows, {manifest['n_tickers']} tickers "
+        f"({manifest['date_min']} to {manifest['date_max']}); data hash {manifest['sha256']}"
+    )
+    return 0
+
+
+def cmd_validate(cfg: Config) -> int:
+    """S1: validate bronze, write silver (flags), validation report and data-quality report."""
+    try:
+        report = run_validate(cfg)
+    except (ValidationError, FileNotFoundError) as e:
+        logger.error(f"validate failed: {e}")
+        return 1
+    warnings = report["status"]["soft_warnings"]
+    print(
+        "Validation passed (all hard checks). "
+        f"Soft warnings: {', '.join(warnings) if warnings else 'none'}. "
+        f"Dataset status: {report['dataset_status']}. See docs/data_quality_report.md"
+    )
+    return 0
 
 
 def cmd_not_implemented(cmd_name: str) -> int:
@@ -125,10 +157,15 @@ def main(argv: list[str] | None = None) -> int:
 
     # Load configuration to verify valid overrides even on unimplemented commands
     try:
-        build_config_from_args(args.config, args.override)
+        cfg = build_config_from_args(args.config, args.override)
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1
+
+    if args.command == "ingest":
+        return cmd_ingest(cfg)
+    if args.command == "validate":
+        return cmd_validate(cfg)
 
     return cmd_not_implemented(args.command)
 
