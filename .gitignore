@@ -1,0 +1,44 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Project Data Directories (keep data/reference tracked)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
+
+# Artifacts and logs
+artifacts/*
+!artifacts/.gitkeep
+!artifacts/fold_plan.json
+!artifacts/tuning_results.csv
+
+# Reports generated
+reports/dev/*
+!reports/dev/.gitkeep
+reports/locked/*
+!reports/locked/.gitkeep
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

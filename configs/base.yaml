@@ -1,0 +1,154 @@
+# Global Default Configuration (Part II, Section II.4)
+
+project:
+  seed: 42
+  variant: "base"
+
+data:
+  raw_zip: "data/raw/archive.zip"
+  raw_csv_name: "NASDAQ100_Historical_Data.csv"
+
+flags:
+  tick_noise_min_close: 5.0
+  corp_action_ret_gap: 0.03
+  corp_action_min_prev_close: 5.0
+  extreme_move_abs_ret: 0.40
+  max_zero_volume_share_ticker: 0.05
+
+universe:
+  seasoning_days: 252
+  min_close: 5.0
+  require_positive_volume: true
+  min_median_dollar_volume_63: 1000000.0
+  cohort_filter: null
+  drop_stitched: false
+
+labels:
+  horizons:
+    - 20
+  primary_horizon: 20
+  winsor_pct:
+    - 0.01
+    - 0.99
+
+features:
+  families:
+    - "momentum"
+    - "volatility"
+    - "trend"
+    - "liquidity"
+    - "market"
+  winsor_pct:
+    - 0.01
+    - 0.99
+
+validation:
+  first_train_decision_date: "2001-01-02"
+  dev_test_years:
+    - 2008
+    - 2009
+    - 2010
+    - 2011
+    - 2012
+    - 2013
+    - 2014
+    - 2015
+    - 2016
+    - 2017
+    - 2018
+    - 2019
+  locked_test_start: "2020-01-02"
+  embargo_days: 5
+  calibration_days: 504
+  train_window_days: null
+  train_stride: 5
+  tuning_end_date: "2007-12-31"
+  tuning_valid_years:
+    - 2005
+    - 2006
+    - 2007
+
+models:
+  ridge:
+    alpha_grid:
+      - 1.0
+      - 10.0
+      - 100.0
+      - 1000.0
+      - 10000.0
+  logistic:
+    C_grid:
+      - 0.001
+      - 0.01
+      - 0.1
+      - 1.0
+  lgbm:
+    fixed:
+      objective: "regression"
+      learning_rate: 0.03
+      max_depth: 4
+      subsample: 0.7
+      subsample_freq: 1
+      colsample_bytree: 0.7
+      reg_lambda: 10.0
+      deterministic: true
+      force_row_wise: true
+      verbose: -1
+    grid:
+      num_leaves:
+        - 7
+        - 15
+      n_estimators:
+        - 150
+        - 300
+        - 600
+      min_child_samples:
+        - 200
+        - 1000
+
+calibration:
+  method: "platt"
+
+signals:
+  r_enter: 0.80
+  r_exit: 0.50
+  r_avoid: 0.20
+  prob_gate:
+    enabled: false
+    margin: 0.02
+  cost_hurdle:
+    enabled: true
+    kappa: 1.0
+  vol_veto:
+    enabled: true
+    max_vol_pct: 0.90
+
+risk:
+  max_weight: 0.10
+
+portfolio:
+  top_fraction: 0.20
+  min_n: 10
+  max_n: 25
+  weighting: "equal_target"
+
+backtest:
+  rebalance_every_days: 20
+  rebalance_anchor_idx: 252
+  cost_bps_per_side: 5.0
+  fill: "next_open"
+  initial_capital: 1000000.0
+  liquidate_at_end: true
+  participation_warn_frac: 0.01
+
+regimes:
+  vol_lookback_days: 21
+  trend_sma_days: 200
+  min_history_days: 252
+
+evaluation:
+  bootstrap_block_days: 20
+  bootstrap_n: 2000
+  risk_free_annual: 0.0
+  tail_stress_q_annual: 0.03
+  tail_stress_loss: 0.60

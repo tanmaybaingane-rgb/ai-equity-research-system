@@ -1,0 +1,36 @@
+# Data expectations for the frozen NASDAQ-100 dataset (Part I, Section I.3)
+
+dataset:
+  raw_archive_name: "archive.zip"
+  raw_csv_name: "NASDAQ100_Historical_Data.csv"
+  expected_columns:
+    - "Ticker"
+    - "Date"
+    - "Open"
+    - "High"
+    - "Low"
+    - "Close"
+    - "Adj Close"
+    - "Volume"
+
+dimensions:
+  expected_rows: 514075
+  expected_tickers: 100
+  expected_issuers: 99
+  expected_trading_days: 6571
+  expected_date_min: "2000-01-03"
+  expected_date_max: "2026-02-18"
+
+quality:
+  expected_duplicates: 0
+  expected_nulls: 0
+  expected_zero_volume_total: 1594
+  expected_azn_zero_volume: 1459
+  expected_close_under_5_rows: 48646
+
+key_reference_events:
+  kdp_special_dividend: "2018-07-10"
+  bkr_special_dividend: "2017-07-05"
+  mdlz_special_dividend: "2012-10-02"
+  tmus_special_dividend: "2013-05-01"
+  nflx_tick_quantization: "2002-10-18"

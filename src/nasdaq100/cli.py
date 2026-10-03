@@ -1,0 +1,122 @@
+"""Command-line interface (CLI) for the NASDAQ-100 Equity Research System.
+
+The CLI is the canonical execution interface per Part II Section II.8.
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+
+from nasdaq100.config import load_config
+from nasdaq100.paths import project_state_path
+from nasdaq100.utils.logging import get_logger
+
+logger = get_logger("cli")
+
+
+def cmd_status() -> int:
+    """Print the project stage checklist from PROJECT_STATE.md."""
+    state_file = project_state_path()
+    if not state_file.is_file():
+        print(f"Error: {state_file} does not exist.")
+        return 1
+
+    content = state_file.read_text(encoding="utf-8")
+    print(content)
+    return 0
+
+
+def cmd_not_implemented(cmd_name: str) -> int:
+    """Fallback handler for stages not yet implemented."""
+    print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
+    return 1
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Main CLI entrypoint."""
+    parser = argparse.ArgumentParser(
+        prog="nasdaq100",
+        description="AI-Driven Equity Research & Portfolio Decision Support System",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to YAML configuration file (default: configs/base.yaml)",
+    )
+    parser.add_argument(
+        "--override",
+        action="append",
+        default=[],
+        help="Config overrides in key=value format (e.g. --override project.variant=test)",
+    )
+
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # S0: status
+    subparsers.add_parser("status", help="Print the living project state checklist")
+
+    # S1: data ingestion & validation
+    subparsers.add_parser("ingest", help="Ingest raw zip and create bronze table")
+    subparsers.add_parser("validate", help="Validate bronze table and create silver table")
+
+    # S2: universe & security master
+    subparsers.add_parser("build-master", help="Build derived security master table")
+    subparsers.add_parser("build-universe", help="Build universe eligibility table")
+
+    # S3: adjusted series
+    subparsers.add_parser("build-adjusted", help="Build adjusted prices and log returns")
+
+    # S4, S5: labels and features
+    subparsers.add_parser("build-labels", help="Build forward returns and labels")
+    subparsers.add_parser("build-features", help="Build raw and normalized features")
+
+    # S12: regimes
+    subparsers.add_parser("regimes", help="Build market regimes table")
+
+    # S6: validation & leakage
+    subparsers.add_parser("check-leakage", help="Run leakage test suite and generate fold plan")
+
+    # S7, S8: training & models
+    subparsers.add_parser("run-baselines", help="Run rule-based baselines")
+    subparsers.add_parser("tune", help="Run inner walk-forward hyperparameter tuning")
+    wf_parser = subparsers.add_parser("walkforward", help="Run walk-forward model training")
+    wf_parser.add_argument("--family", choices=["ridge_logit", "lgbm"], default="ridge_logit")
+    wf_parser.add_argument("--split", choices=["dev", "locked"], default="dev")
+
+    # S9: signals
+    subparsers.add_parser("signals", help="Generate discrete trade signals")
+
+    # S11: backtest
+    subparsers.add_parser("backtest", help="Run full event-driven portfolio backtest")
+
+    # S13, S14: evaluation & explainability
+    subparsers.add_parser("evaluate", help="Compute strategy metrics and evidence package")
+    subparsers.add_parser("explain", help="Compute feature importance and SHAP values")
+
+    # S16: locked test
+    subparsers.add_parser("freeze-protocol", help="Freeze candidate strategies for locked test")
+    subparsers.add_parser("locked-test", help="Execute single-run locked test")
+
+    args = parser.parse_args(argv)
+
+    if not args.command:
+        parser.print_help()
+        return 0
+
+    if args.command == "status":
+        return cmd_status()
+
+    # Load configuration to verify valid overrides even on unimplemented commands
+    try:
+        load_config(config_path=args.config, overrides=args.override)
+    except Exception as e:
+        logger.error(f"Failed to load configuration: {e}")
+        return 1
+
+    return cmd_not_implemented(args.command)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
