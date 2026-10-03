@@ -285,8 +285,11 @@ def load_config(
 
     Precedence:
     1. CLI overrides (--override key=value)
-    2. Override YAML file
-    3. Base YAML file
+    2. Override YAML file (``override_file``; this is what the CLI ``--config`` flag maps to)
+    3. Base YAML file (``configs/base.yaml``)
+
+    ``config_path`` *replaces* the base YAML. It exists for tests and tooling only; the CLI
+    never passes it, so ``configs/base.yaml`` is always the base of a command-line run.
     """
     path = Path(config_path) if config_path is not None else base_config_path()
     if not path.is_file():

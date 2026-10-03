@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from nasdaq100.config import load_config
+from nasdaq100.config import Config, load_config
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
 
@@ -27,6 +27,18 @@ def cmd_status() -> int:
     return 0
 
 
+def build_config_from_args(config: str | None, overrides: list[str] | None) -> Config:
+    """Resolve the run configuration from the CLI arguments.
+
+    Precedence (Part II Section II.4 / Stage S0):
+    ``configs/base.yaml`` < ``--config`` experiment override file < ``--override key=value``.
+
+    ``--config`` is an *override* file layered on top of ``configs/base.yaml``; it never
+    replaces the base configuration.
+    """
+    return load_config(override_file=config, overrides=overrides)
+
+
 def cmd_not_implemented(cmd_name: str) -> int:
     """Fallback handler for stages not yet implemented."""
     print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
@@ -43,7 +55,10 @@ def main(argv: list[str] | None = None) -> int:
         "--config",
         type=str,
         default=None,
-        help="Path to YAML configuration file (default: configs/base.yaml)",
+        help=(
+            "Path to an experiment override YAML, layered on top of configs/base.yaml "
+            "(e.g. configs/experiments/<name>.yaml)"
+        ),
     )
     parser.add_argument(
         "--override",
@@ -110,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Load configuration to verify valid overrides even on unimplemented commands
     try:
-        load_config(config_path=args.config, overrides=args.override)
+        build_config_from_args(args.config, args.override)
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1
