@@ -10,6 +10,8 @@ import sys
 
 from nasdaq100.config import Config, load_config
 from nasdaq100.data.ingest import IngestError, run_ingest
+from nasdaq100.data.security_master import SecurityMasterError, run_build_master
+from nasdaq100.data.universe import UniverseError, run_build_universe
 from nasdaq100.data.validate import ValidationError, run_validate
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
@@ -67,6 +69,35 @@ def cmd_validate(cfg: Config) -> int:
         "Validation passed (all hard checks). "
         f"Soft warnings: {', '.join(warnings) if warnings else 'none'}. "
         f"Dataset status: {report['dataset_status']}. See docs/data_quality_report.md"
+    )
+    return 0
+
+
+def cmd_build_master(cfg: Config) -> int:
+    """S2: build data/reference/security_master.csv from silver + curated exceptions."""
+    try:
+        master = run_build_master(cfg)
+    except (SecurityMasterError, FileNotFoundError) as e:
+        logger.error(f"build-master failed: {e}")
+        return 1
+    excluded = master.loc[~master["include_in_universe"], "ticker"].tolist()
+    print(
+        f"Security master: {len(master)} tickers, {len(master) - len(excluded)} included; "
+        f"excluded: {', '.join(excluded) if excluded else 'none'}. Dataset status: SURVIVOR-BIASED"
+    )
+    return 0
+
+
+def cmd_build_universe(cfg: Config) -> int:
+    """S2: build data/processed/{variant}/universe.parquet (eligibility per ticker and date)."""
+    try:
+        universe = run_build_universe(cfg)
+    except (UniverseError, SecurityMasterError, FileNotFoundError) as e:
+        logger.error(f"build-universe failed: {e}")
+        return 1
+    print(
+        f"Universe [variant={cfg.project.variant}]: {len(universe):,} rows, "
+        f"{int(universe['eligible'].sum()):,} eligible. Dataset status: SURVIVOR-BIASED"
     )
     return 0
 
@@ -166,6 +197,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ingest(cfg)
     if args.command == "validate":
         return cmd_validate(cfg)
+    if args.command == "build-master":
+        return cmd_build_master(cfg)
+    if args.command == "build-universe":
+        return cmd_build_universe(cfg)
 
     return cmd_not_implemented(args.command)
 

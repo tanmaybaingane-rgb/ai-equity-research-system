@@ -1,0 +1,10 @@
+ticker,issuer_id,share_class,exclusion_reason,stitching_suspect,notes
+AZN,AZN,,illiquid non-representative series; 34% zero-volume days,false,
+GOOG,GOOGL,C,duplicate share class of GOOGL,false,
+GOOGL,GOOGL,A,,false,
+CCEP,CCEP,,,true,history appears to include predecessor company; unverified
+KDP,KDP,,,true,history appears to include predecessor company; unverified
+WBD,WBD,,,true,history appears to include predecessor company; unverified
+LIN,LIN,,,true,history appears to include predecessor company; unverified
+BKR,BKR,,,true,history appears to include predecessor company; unverified
+MDLZ,MDLZ,,,true,history appears to include predecessor company; unverified

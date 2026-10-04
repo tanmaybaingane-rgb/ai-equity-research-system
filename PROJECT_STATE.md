@@ -2,7 +2,7 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-04 (S1 implemented; awaiting local verification)
+**Last updated:** 2026-10-04 (S2 implemented; awaiting local verification)
 **Git baseline:** `93f1abb` "S0: foundations" (branch `master`, no remote configured)
 **Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
 
@@ -14,7 +14,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 |:---|:---|:---:|:---:|:---:|:---|
 | **S0** | Foundations (repository, configuration, tooling) | ✅ Done (local) | 2026-10-03 | `93f1abb` + close-out | CI not yet run (no remote). `make test` not run (direct pytest equivalent used). See S0 log. |
 | **S1** | Data ingestion, validation and quality flags | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S1 log). Run the local verification commands, then commit as `S1: ingestion, validation, flags`. |
-| **S2** | Security master and universe (eligibility) layer | Not started | - | - | - |
+| **S2** | Security master and universe (eligibility) layer | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S2 log). Run the local verification commands, then commit as `S2: security master and universe`. |
 | **S3** | Adjusted price series and returns | Not started | - | - | - |
 | **S4** | Label generation | Not started | - | - | - |
 | **S5** | Feature engineering (stock-level, market-level, normalisation) | Not started | - | - | Milestone M1 (clean labelled panel) |
@@ -110,14 +110,53 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 - Besides the four reference events, `flag_corp_action_suspect` also fires on MSFT 2004-11-15 (special dividend), CCEP 2010-10-04 and 2016-05-31, ASML, KLAC and others, and on ~10 marginal events with a return gap of 0.03-0.04 (AZN x5, COST x3, PCAR x2) that look like large ordinary dividends. They are flags only; S2/S3 decide what to do with them.
 - `Close` and `Adj Close` are both 2-decimal rounded, so `adj_close / close` ratios are noisy at low prices (the reason for the `corp_action_min_prev_close` guard).
 
+### S2: Security master and universe: implemented (awaiting local verification)
+
+**Delivered:**
+- `src/nasdaq100/data/security_master.py`: curated-exceptions loader/validator, `build_security_master` (curated defaults + `first_date, last_date, n_obs, cohort, zero_volume_share, median_dollar_volume_last_year, include_in_universe, status_reason`), deterministic CSV writer/loader, `read_silver`, `run_build_master`.
+- `src/nasdaq100/data/universe.py`: `build_universe` (the single place eligibility is decided), `run_build_universe`, `load_universe(cfg)` (honours `project.variant`, applies no filter of its own), `master_fail_by_ticker`.
+- `data/reference/security_master_curated.csv` (tracked; exceptions only): AZN and GOOG excluded; GOOG `issuer_id=GOOGL`; GOOGL `share_class=A`; `stitching_suspect=true` for CCEP, KDP, WBD, LIN, BKR, MDLZ.
+- `docs/survivorship.md` (hand-written, tracked): evidence, what the universe does and does not do, claims policy (section IV.4), `in_index_pit` plug-in point.
+- CLI: `build-master` and `build-universe` (config is validated first; failures exit 1).
+- Tests: `tests/unit/test_{security_master,universe,cli_s2,survivorship_doc}.py`, `tests/leakage/test_universe_time_safety.py` (L2), `tests/integration/test_s2_real_data.py` (`needs_data`), `tests/integration/conftest.py` (session fixture `real_s1`: runs S1 into a temp dir), `tests/fixtures/s2_silver.py`. Five `test_cli.py` references used `build-master` as the "unimplemented command" example; they now use `explain`.
+
+**Measured on the real archive (assistant's sandbox; all within the guide's tolerances):** security master 100 tickers (55 `orig2000`, 45 `later`), 98 included, excluded AZN (curated + quality rule: 34.1% zero-volume days) and GOOG (curated); empty curated file still excludes exactly AZN. Universe 514,075 rows, 436,753 eligible (85.0%); `fail_*` rows: master 9,688, seasoning 25,200, min_close 48,646, zero_volume 1,594, liquidity 14,715. Median eligible names per date by year: 2001 = 42, 2005 = 48, 2008 = 53, 2010 = 59, 2015 = 75, 2019 = 83, 2022 = 94, 2025 = 98. GOOG never eligible; GOOGL first eligible 2005-08-18 (its 253rd observation). Variant `orig55` (`cohort_filter=original55`): 317,109 eligible rows, base untouched.
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| `pytest -m "not needs_data and not slow"` (sandbox) | 119 passed | 77 (S0+S1) + 42 new |
+| `pytest -m needs_data` (sandbox, real archive) | 30 passed | 13 (S1) + 17 new; full tree 149 passed |
+| `pytest -m leakage` (sandbox) | 4 passed | L2 universe time-safety |
+| CLI `ingest`, `validate`, `build-master`, `build-universe` (sandbox, real archive) | Work; master and universe rebuilds are deterministic | Isolated copy of the repo layout; variant run does not overwrite base |
+| Mutation checks (sandbox) | 9/9 caught | Seasoning off-by-one, `min_periods`, NaN-liquidity handling, strict `<` min close, stitched drop, `eligible` formula, quality rule (two ways), look-ahead via whole-history `n_obs` |
+| Ruff | Not run | Unavailable offline; AST check for unused imports/variables found nothing. **Run `ruff check .` locally.** |
+| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+
+**Interpretations of the guide (none change a schema):**
+1. `universe.cohort_filter` accepts `original55` / `later` (section II.4) and maps them to the security-master cohorts `orig2000` / `later` (section II.5): the same 55 tickers (first date 2000-01-03). Any other value raises `UniverseError` (config still does not validate enum strings; S0 deviation 5 unchanged).
+2. `median_dollar_volume_last_year` is the median of `close * volume` over each ticker's last 252 observations (not calendar 2025). Measured: AZN about $0.20M; next-lowest GFS about $84M (the guide quotes about $0.19M and about $75M for 2025).
+3. **`include_in_universe` is static and whole-history by specification** (curated exclusions plus the zero-volume quality rule on full-history `zero_volume_share`). It is a curation decision, not a per-date rule; only AZN is affected by the quality rule today. The per-date rules (seasoning, min close, zero volume, liquidity) are time-safe (L2). The L2 test holds the master fixed. Disclosed in `docs/survivorship.md`.
+4. `security_master.csv` does not depend on `project.variant`, but it embeds `flags.max_zero_volume_share_ticker`: re-run `build-master` after changing that key.
+5. `universe.parquet` has exactly the section II.5 columns (no `t_idx` or `n_obs`); later stages join the calendar or silver. The builder takes `n_obs` from silver and raises if it is inconsistent with row order.
+6. GOOG `share_class` is `C` in the curated file (the guide only specifies GOOGL = `A`; GOOG is Alphabet's class C).
+7. `load_universe` has no locked-test guard: decision D19 belongs to S6/S16, which must wrap it. No `experiments/registry.csv` row is written (no experiment results), consistent with S1.
+8. `data/reference/security_master.csv` is not git-ignored (the guide keeps `data/reference` tracked); it is small and byte-for-byte deterministic, so committing it is reasonable.
+9. `make data` still lists `build-adjusted` (S3 stub, exits 1): it runs the four S1/S2 commands correctly and then stops. Run the S1/S2 commands directly until S3 exists.
+
+**Observations for later stages (informational):**
+- The first 252 trading dates have zero eligible names by construction (seasoning); the first eligible decision date is 2001-01-02 (`t_idx` 252), as in the guide.
+- Ineligible rows are kept in `universe.parquet` with their `fail_*` reasons; S1 flags remain only in silver.
+
 ---
 
 ## Exact next step
 
-1. Apply the S1 patch and run the local verification (see the hand-off message): `pytest -m "not needs_data and not slow"`, `ruff check .`, `python -m nasdaq100.cli ingest`, `python -m nasdaq100.cli validate`, `pytest -m needs_data`. Record the results in the S1 verification table above.
-2. Read `docs/data_quality_report.md` and compare it with guide section I.3 (the numbers above should match). Optionally eyeball NFLX 2002-10-18 and KDP 2018-07-10 in `data/interim/prices_silver.parquet`.
-3. Commit as `S1: ingestion, validation, flags` (include `docs/data_quality_report.md`; never commit `data/raw`, `data/interim`, `data/reports`).
-4. Then start **S2: Security master and universe (eligibility) layer** in a new chat (attach the guide, this file, the repo tree, `configs/base.yaml`, the S0/S1 modules and the first rows of `prices_silver.parquet`).
+1. Apply the S2 patches and run the local verification (see the hand-off message): `pytest -m "not needs_data and not slow"`, `ruff check .`, `python -m nasdaq100.cli build-master`, `python -m nasdaq100.cli build-universe`, `pytest -m needs_data`. Record the results in the S2 verification table above.
+2. Review `data/reference/security_master.csv` (AZN and GOOG excluded; six stitching suspects) and compare the per-year eligible counts with guide section I.3 (the log above lists the sandbox values). Optionally plot eligible names per year.
+3. Commit as `S2: security master and universe` (include `data/reference/security_master_curated.csv`, `docs/survivorship.md`, and, if you agree, the deterministic `data/reference/security_master.csv`; never commit `data/raw`, `data/interim`, `data/processed`, `data/reports`).
+4. Then start **S3: Adjusted price series and returns** in a new chat (attach the guide, this file, the repo tree, `configs/base.yaml`, and the S1 outputs' schemas).
 
 ---
 
@@ -129,12 +168,17 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `configs/base.yaml` | All default parameters; `--config` override files layer on top |
 | `src/nasdaq100/config.py` | Config loader and `config_hash` |
 | `src/nasdaq100/paths.py` | All artifact path helpers (variant-namespaced) |
-| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate` work; other commands are stubs until their stage) |
+| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe` work; other commands are stubs until their stage) |
 | `src/nasdaq100/utils/io.py` | Parquet I/O, registry append, run IDs |
 | `src/nasdaq100/utils/calendar.py` | Global trading calendar, `t_idx` arithmetic, rebalance dates |
 | `src/nasdaq100/data/ingest.py` | Zip -> bronze, calendar, manifest, frozen-dataset guard |
 | `src/nasdaq100/data/flags.py` | Silver flags (`n_obs`, `flag_*`) |
 | `src/nasdaq100/data/validate.py` | Hard/soft checks, validation report, data-quality report |
+| `src/nasdaq100/data/security_master.py` | Curated exceptions + derived security master (`data/reference/security_master.csv`) |
+| `src/nasdaq100/data/universe.py` | Eligibility builder (single source of truth) and `load_universe(cfg)` |
+| `data/reference/security_master_curated.csv` | Hand-curated exceptions (AZN, GOOG, stitching suspects); tracked |
+| `docs/survivorship.md` | Survivorship evidence, allowed claims, point-in-time plug-in point |
 | `tests/fixtures/toy_data.py` | Synthetic price and panel generators |
 | `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
+| `tests/fixtures/s2_silver.py` | Liquid synthetic silver tables, curated frames and configs for S2 tests |
 | `experiments/registry.csv` | Append-only experiment log (header only so far) |

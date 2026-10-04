@@ -22,7 +22,7 @@ def test_cli_status(capsys: pytest.CaptureFixture[str]) -> None:
 @pytest.mark.unit
 def test_cli_unimplemented_command(capsys: pytest.CaptureFixture[str]) -> None:
     """Verify that commands for future stages exit with 1 and informative message."""
-    exit_code = main(["build-master"])
+    exit_code = main(["explain"])
     assert exit_code == 1
 
     captured = capsys.readouterr()
@@ -37,7 +37,7 @@ def test_cli_invalid_config_override() -> None:
     assert exit_code == 0
 
     # Non-status command verifies config
-    exit_code2 = main(["--override", "unknown_section.val=123", "build-master"])
+    exit_code2 = main(["--override", "unknown_section.val=123", "explain"])
     assert exit_code2 == 1
 
 
@@ -80,14 +80,14 @@ def test_cli_accepts_valid_config_file_and_rejects_bad_ones(
     """A valid --config file loads (the stub then reports 'not yet implemented'); bad ones fail."""
     good = tmp_path / "good.yaml"
     good.write_text("project:\n  variant: exp1\n")
-    assert main(["--config", str(good), "build-master"]) == 1
+    assert main(["--config", str(good), "explain"]) == 1
     assert "not yet implemented" in capsys.readouterr().out
 
     unknown_key = tmp_path / "unknown_key.yaml"
     unknown_key.write_text("universe:\n  not_a_real_key: 1\n")
-    assert main(["--config", str(unknown_key), "build-master"]) == 1
+    assert main(["--config", str(unknown_key), "explain"]) == 1
     assert "not yet implemented" not in capsys.readouterr().out  # failed at config validation
 
     missing = tmp_path / "does_not_exist.yaml"
-    assert main(["--config", str(missing), "build-master"]) == 1
+    assert main(["--config", str(missing), "explain"]) == 1
     assert "not yet implemented" not in capsys.readouterr().out
