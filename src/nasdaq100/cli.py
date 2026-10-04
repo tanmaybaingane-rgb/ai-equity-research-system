@@ -9,6 +9,7 @@ import argparse
 import sys
 
 from nasdaq100.config import Config, load_config
+from nasdaq100.data.adjust import AdjustError, run_build_adjusted
 from nasdaq100.data.ingest import IngestError, run_ingest
 from nasdaq100.data.security_master import SecurityMasterError, run_build_master
 from nasdaq100.data.universe import UniverseError, run_build_universe
@@ -98,6 +99,21 @@ def cmd_build_universe(cfg: Config) -> int:
     print(
         f"Universe [variant={cfg.project.variant}]: {len(universe):,} rows, "
         f"{int(universe['eligible'].sum()):,} eligible. Dataset status: SURVIVOR-BIASED"
+    )
+    return 0
+
+
+def cmd_build_adjusted(cfg: Config) -> int:
+    """S3: build data/processed/{variant}/adjusted_prices.parquet (adjusted OHLC and returns)."""
+    try:
+        adjusted = run_build_adjusted(cfg)
+    except (AdjustError, FileNotFoundError) as e:
+        logger.error(f"build-adjusted failed: {e}")
+        return 1
+    print(
+        f"Adjusted prices [variant={cfg.project.variant}]: {len(adjusted):,} rows, "
+        f"{adjusted['ticker'].nunique()} tickers, "
+        f"{int(adjusted['logret_cc'].isna().sum())} NaN logret_cc (first rows only)"
     )
     return 0
 
@@ -201,6 +217,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build_master(cfg)
     if args.command == "build-universe":
         return cmd_build_universe(cfg)
+    if args.command == "build-adjusted":
+        return cmd_build_adjusted(cfg)
 
     return cmd_not_implemented(args.command)
 

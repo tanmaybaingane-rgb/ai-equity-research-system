@@ -2,7 +2,7 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-04 (S2 implemented; awaiting local verification)
+**Last updated:** 2026-10-04 (S3 implemented; awaiting local verification)
 **Git baseline:** `93f1abb` "S0: foundations" (branch `master`, no remote configured)
 **Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
 
@@ -15,7 +15,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | **S0** | Foundations (repository, configuration, tooling) | ✅ Done (local) | 2026-10-03 | `93f1abb` + close-out | CI not yet run (no remote). `make test` not run (direct pytest equivalent used). See S0 log. |
 | **S1** | Data ingestion, validation and quality flags | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S1 log). Run the local verification commands, then commit as `S1: ingestion, validation, flags`. |
 | **S2** | Security master and universe (eligibility) layer | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S2 log). Run the local verification commands, then commit as `S2: security master and universe`. |
-| **S3** | Adjusted price series and returns | Not started | - | - | - |
+| **S3** | Adjusted price series and returns | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S3 log). Run the local verification commands, then commit as `S3: adjusted series`. |
 | **S4** | Label generation | Not started | - | - | - |
 | **S5** | Feature engineering (stock-level, market-level, normalisation) | Not started | - | - | Milestone M1 (clean labelled panel) |
 | **S6** | Validation framework (splits, locked-test guard, leakage tooling) | Not started | - | - | - |
@@ -182,3 +182,39 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
 | `tests/fixtures/s2_silver.py` | Liquid synthetic silver tables, curated frames and configs for S2 tests |
 | `experiments/registry.csv` | Append-only experiment log (header only so far) |
+
+### S3: Adjusted price series and returns: implemented (awaiting local verification)
+
+**Delivered:**
+- `src/nasdaq100/data/adjust.py`: `build_adjusted(silver, calendar)` (pure), `run_build_adjusted(cfg, ...)` (reads silver and `calendar.parquet`, writes `data/processed/{variant}/adjusted_prices.parquet`), `load_adjusted(cfg)` (the only supported reader for later stages), `AdjustError`, `ADJUSTED_COLUMNS`. Columns exactly as section II.5: `ticker, date, t_idx, adj_factor, adj_open, adj_high, adj_low, adj_close, volume, dollar_volume, logret_cc`; flags are not carried.
+- Specification: `adj_factor = adj_close / close`; `adj_open/high/low = field * adj_factor`; `adj_close` carried unchanged; `dollar_volume = close * volume`; `logret_cc = ln(adj_close_t / adj_close_{t-1})` per ticker (NaN on each ticker's first row); `t_idx` from the calendar, asserted consecutive within each ticker. Rows are never dropped (row set == silver).
+- CLI: `build-adjusted` (config is validated first; failures exit 1).
+- Tests: `tests/unit/test_{adjust,cli_s3}.py`, `tests/leakage/test_adjusted_scale_invariance.py` (L3, S3 part: scale invariance plus causality of `logret_cc`), `tests/integration/test_s3_real_data.py` (`needs_data`).
+
+**Measured on the real archive (assistant's sandbox):** 514,075 rows, 100 tickers, row keys identical to `universe.parquet`; 100 NaN `logret_cc` (one per ticker, first rows only), none elsewhere; `adj_factor` is exactly 1.0 on every ticker's last date (minimum factor 0.1063); `logret_cc` range -0.833 to +0.562. Known events: KDP 2018-07-10 +0.1088, AAPL 2000-09-29 -0.7185; special-dividend days are small in adjusted terms: BKR 2017-07-05 -0.0759, MDLZ 2012-10-02 -0.0123 (raw close returns are below -0.3), TMUS 2013-05-01 -0.1717.
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| Baseline (S2 tree) in the assistant's sandbox | 119/119 passed (not needs_data, not slow) | Calibration of the stand-ins below |
+| `pytest -m "not needs_data and not slow"` (sandbox) | 141 passed | 119 (S0-S2) + 22 new |
+| `pytest -m needs_data` (sandbox, real archive) | 38 passed | 30 (S1, S2) + 8 new; full tree 179 passed |
+| `pytest -m leakage` (sandbox) | 8 passed | 4 (L2) + 4 new (L3, S3 part) |
+| CLI `ingest`, `validate`, `build-master`, `build-adjusted`, `build-universe` (sandbox, real archive) | Work | Isolated copy of the repo layout |
+| Mutation checks (sandbox) | 8/8 caught | Inverted factor, close-based returns, dollar volume on adjusted close, gap check, cross-ticker shift, recomputed `adj_close`, missing ordering widening, `t_idx` off by one |
+| Ruff | Not run | Unavailable offline; AST check for unused imports and a line-length/whitespace check found nothing. **Run `ruff check .` locally.** |
+| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+
+**Interpretations of the guide (none change a schema):**
+1. `adj_low <= adj_open, adj_close <= adj_high` is made exact. `adj_close` is the vendor value, which can differ from `close * adj_factor` by one ulp; where the bar's high (low) equals the close, the plain product broke the ordering at the 1e-16 level on 455 rows (227 + 228). `adj_high` is therefore the maximum and `adj_low` the minimum of the product and the adjusted open/close. Values still equal `field * adj_factor` to a relative 1e-12.
+2. The table does not depend on any config key, but is written per variant (`adjusted_prices_path(cfg.project.variant)`) so variant pipelines (S2-S8-S11 min-close reruns) find all inputs in one directory; run `build-adjusted` with the same `--override project.variant=...`.
+3. `build-adjusted` needs only silver and the calendar (S1). It does not read the universe or the security master, so it can run before or after `build-universe`.
+4. Invalid input (missing columns, NaN, non-positive prices, duplicate keys, dates off the calendar, a non-consecutive `t_idx`) raises `AdjustError`; the CLI exits 1. S1 already guarantees these cannot happen on the frozen dataset.
+5. A ticker whose `adj_factor` is not 1.0 on its last date is logged as a warning, not an error (none on the real data; the S0 toy fixture has one).
+6. No `experiments/registry.csv` row is written (no experiment results), consistent with S1 and S2.
+7. `make data` now runs every command it lists (`ingest`, `validate`, `build-master`, `build-adjusted`, `build-universe`); `build-labels` and later are still stubs.
+
+**Observations for later stages (informational):**
+- The adjusted *level* is meaningless; S4 labels use ratios of `adj_open`, and S5 features use ratios of `adj_close` and `logret_cc` only (guide pitfalls).
+- Low-price rounding makes `logret_cc` noisy early in a ticker's history (AAPL 2000-09-29 is the extreme case); S2's `min_close` eligibility rule is what keeps such rows out of the modelling panel.
