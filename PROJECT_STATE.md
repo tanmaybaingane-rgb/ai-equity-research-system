@@ -2,8 +2,8 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-04 (S3 implemented; awaiting local verification)
-**Git baseline:** `93f1abb` "S0: foundations" (branch `master`, no remote configured)
+**Last updated:** 2026-10-05 (S3 complete and locally verified)
+**Git baseline:** `bbde223` "S3: adjusted series" (branch `master`, no remote configured)
 **Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
 
 ---
@@ -12,10 +12,10 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 | Stage | Name | Status | Completed | Commit | Notes |
 |:---|:---|:---:|:---:|:---:|:---|
-| **S0** | Foundations (repository, configuration, tooling) | ✅ Done (local) | 2026-10-03 | `93f1abb` + close-out | CI not yet run (no remote). `make test` not run (direct pytest equivalent used). See S0 log. |
-| **S1** | Data ingestion, validation and quality flags | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S1 log). Run the local verification commands, then commit as `S1: ingestion, validation, flags`. |
-| **S2** | Security master and universe (eligibility) layer | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S2 log). Run the local verification commands, then commit as `S2: security master and universe`. |
-| **S3** | Adjusted price series and returns | 🟡 Implemented (not yet verified locally) | 2026-10-04 | - | Sandbox-verified with stand-ins (see S3 log). Run the local verification commands, then commit as `S3: adjusted series`. |
+| **S0** | Foundations (repository, configuration, tooling) | ? Done (local) | 2026-10-03 | `86767bb` | Initial foundations in `93f1abb`; close-out in `86767bb`. CI not run (no remote). See S0 log. |
+| **S1** | Data ingestion, validation and quality flags | ? Done (local) | 2026-10-04 | `c251ae3` | Locally verified with the real archive and dependencies. See S1 log. |
+| **S2** | Security master and universe (eligibility) layer | ? Done (local) | 2026-10-04 | `102b7c8` | Locally verified with the real archive and dependencies. See S2 log. |
+| **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
 | **S4** | Label generation | Not started | - | - | - |
 | **S5** | Feature engineering (stock-level, market-level, normalisation) | Not started | - | - | Milestone M1 (clean labelled panel) |
 | **S6** | Validation framework (splits, locked-test guard, leakage tooling) | Not started | - | - | - |
@@ -153,12 +153,10 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 ## Exact next step
 
-1. Apply the S2 patches and run the local verification (see the hand-off message): `pytest -m "not needs_data and not slow"`, `ruff check .`, `python -m nasdaq100.cli build-master`, `python -m nasdaq100.cli build-universe`, `pytest -m needs_data`. Record the results in the S2 verification table above.
-2. Review `data/reference/security_master.csv` (AZN and GOOG excluded; six stitching suspects) and compare the per-year eligible counts with guide section I.3 (the log above lists the sandbox values). Optionally plot eligible names per year.
-3. Commit as `S2: security master and universe` (include `data/reference/security_master_curated.csv`, `docs/survivorship.md`, and, if you agree, the deterministic `data/reference/security_master.csv`; never commit `data/raw`, `data/interim`, `data/processed`, `data/reports`).
-4. Then start **S3: Adjusted price series and returns** in a new chat (attach the guide, this file, the repo tree, `configs/base.yaml`, and the S1 outputs' schemas).
-
----
+1. Preserve the completed S0-S3 checkpoints. Current HEAD is `bbde223` (`S3: adjusted series`).
+2. Create the S4 handoff ZIP from the current tree, excluding `.git` and `.venv`.
+3. Start a new Claude chat for **S4 Label generation**. Include the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md`, and the S4 handoff ZIP.
+4. S4 must preserve S0-S3 and implement **S4 only**.
 
 ## File Quick Reference
 
