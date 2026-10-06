@@ -1,2 +1,0 @@
-[console_scripts]
-nasdaq100 = nasdaq100.cli:main
