@@ -14,6 +14,7 @@ from nasdaq100.data.ingest import IngestError, run_ingest
 from nasdaq100.data.security_master import SecurityMasterError, run_build_master
 from nasdaq100.data.universe import UniverseError, run_build_universe
 from nasdaq100.data.validate import ValidationError, run_validate
+from nasdaq100.labels.forward_returns import LabelError, run_build_labels
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
 
@@ -118,6 +119,23 @@ def cmd_build_adjusted(cfg: Config) -> int:
     return 0
 
 
+def cmd_build_labels(cfg: Config) -> int:
+    """S4: build data/processed/{variant}/labels.parquet (forward returns and labels)."""
+    try:
+        labels = run_build_labels(cfg)
+    except (LabelError, AdjustError, UniverseError, FileNotFoundError) as e:
+        logger.error(f"build-labels failed: {e}")
+        return 1
+    parts = []
+    for h in cfg.labels.horizons:
+        parts.append(
+            f"h={h}: {int(labels[f'has_label_h{h}'].sum()):,} with forward return, "
+            f"{int(labels[f'excess_h{h}'].notna().sum()):,} cross-sectional"
+        )
+    print(f"Labels [variant={cfg.project.variant}]: {len(labels):,} rows; " + "; ".join(parts))
+    return 0
+
+
 def cmd_not_implemented(cmd_name: str) -> int:
     """Fallback handler for stages not yet implemented."""
     print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
@@ -219,6 +237,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build_universe(cfg)
     if args.command == "build-adjusted":
         return cmd_build_adjusted(cfg)
+    if args.command == "build-labels":
+        return cmd_build_labels(cfg)
 
     return cmd_not_implemented(args.command)
 

@@ -2,7 +2,7 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-05 (S3 complete and locally verified)
+**Last updated:** 2026-10-06 (S4 implemented; awaiting local verification)
 **Git baseline:** `bbde223` "S3: adjusted series" (branch `master`, no remote configured)
 **Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
 
@@ -16,7 +16,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | **S1** | Data ingestion, validation and quality flags | ? Done (local) | 2026-10-04 | `c251ae3` | Locally verified with the real archive and dependencies. See S1 log. |
 | **S2** | Security master and universe (eligibility) layer | ? Done (local) | 2026-10-04 | `102b7c8` | Locally verified with the real archive and dependencies. See S2 log. |
 | **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
-| **S4** | Label generation | Not started | - | - | - |
+| **S4** | Label generation | 🟡 Implemented (not yet verified locally) | 2026-10-06 | - | Sandbox-verified with stand-ins (see S4 log). Run the local verification commands, then commit as `S4: labels`. |
 | **S5** | Feature engineering (stock-level, market-level, normalisation) | Not started | - | - | Milestone M1 (clean labelled panel) |
 | **S6** | Validation framework (splits, locked-test guard, leakage tooling) | Not started | - | - | - |
 | **S7** | Predictive evaluation library and baseline models | Not started | - | - | - |
@@ -153,10 +153,10 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 ## Exact next step
 
-1. Preserve the completed S0-S3 checkpoints. Current HEAD is `bbde223` (`S3: adjusted series`).
-2. Create the S4 handoff ZIP from the current tree, excluding `.git` and `.venv`.
-3. Start a new Claude chat for **S4 Label generation**. Include the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md`, and the S4 handoff ZIP.
-4. S4 must preserve S0-S3 and implement **S4 only**.
+1. Verify S4 locally (see the S4 log: `pytest -m "not needs_data"`, `pytest -m leakage`, `python -m nasdaq100.cli build-labels`, `pytest -m needs_data`, `ruff check .`), record the results, then commit as `S4: labels`.
+2. Create the S5 handoff ZIP from the committed tree, excluding `.git` and `.venv`.
+3. Start a new Claude chat for **S5 Feature engineering**. Include the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md`, and the S5 handoff ZIP.
+4. S5 must preserve S0-S4 and implement **S5 only**.
 
 ## File Quick Reference
 
@@ -166,7 +166,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `configs/base.yaml` | All default parameters; `--config` override files layer on top |
 | `src/nasdaq100/config.py` | Config loader and `config_hash` |
 | `src/nasdaq100/paths.py` | All artifact path helpers (variant-namespaced) |
-| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe` work; other commands are stubs until their stage) |
+| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels` work; other commands are stubs until their stage) |
 | `src/nasdaq100/utils/io.py` | Parquet I/O, registry append, run IDs |
 | `src/nasdaq100/utils/calendar.py` | Global trading calendar, `t_idx` arithmetic, rebalance dates |
 | `src/nasdaq100/data/ingest.py` | Zip -> bronze, calendar, manifest, frozen-dataset guard |
@@ -174,11 +174,15 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `src/nasdaq100/data/validate.py` | Hard/soft checks, validation report, data-quality report |
 | `src/nasdaq100/data/security_master.py` | Curated exceptions + derived security master (`data/reference/security_master.csv`) |
 | `src/nasdaq100/data/universe.py` | Eligibility builder (single source of truth) and `load_universe(cfg)` |
+| `src/nasdaq100/data/adjust.py` | Adjusted prices and `logret_cc` (S3) and `load_adjusted(cfg)` |
+| `src/nasdaq100/labels/forward_returns.py` | Forward-return labels (S4), `build_labels`, `run_build_labels`, `load_labels(cfg)` |
 | `data/reference/security_master_curated.csv` | Hand-curated exceptions (AZN, GOOG, stitching suspects); tracked |
+| `docs/data_dictionary.md` | Column-level documentation of processed tables (labels so far) |
 | `docs/survivorship.md` | Survivorship evidence, allowed claims, point-in-time plug-in point |
 | `tests/fixtures/toy_data.py` | Synthetic price and panel generators |
 | `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
 | `tests/fixtures/s2_silver.py` | Liquid synthetic silver tables, curated frames and configs for S2 tests |
+| `tests/fixtures/s4_labels.py` | Synthetic adjusted-price and universe tables (full S3 / S2 schemas) for S4 tests |
 | `experiments/registry.csv` | Append-only experiment log (header only so far) |
 
 ### S3: Adjusted price series and returns: implemented (awaiting local verification)
@@ -216,3 +220,41 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 **Observations for later stages (informational):**
 - The adjusted *level* is meaningless; S4 labels use ratios of `adj_open`, and S5 features use ratios of `adj_close` and `logret_cc` only (guide pitfalls).
 - Low-price rounding makes `logret_cc` noisy early in a ticker's history (AAPL 2000-09-29 is the extreme case); S2's `min_close` eligibility rule is what keeps such rows out of the modelling panel.
+
+### S4: Label generation: implemented (awaiting local verification)
+
+**Delivered:**
+- `src/nasdaq100/labels/forward_returns.py`: `build_labels(adjusted, universe, cfg.labels, calendar, *, min_names=20)` (pure), `run_build_labels(cfg, ...)` (reads `adjusted_prices.parquet`, `universe.parquet`, `calendar.parquet`; writes `data/processed/{variant}/labels.parquet`), `load_labels(cfg)` (the only supported reader for later stages), `label_columns(horizons)`, `LabelError`.
+- Per horizon `h` in `labels.horizons` (default `[20]`), columns exactly as section II.5, after `ticker, date`: `ret_fwd_h{h}, excess_h{h}, y_reg_h{h}, y_cls_h{h}, rank_pct_h{h}, label_exit_idx_h{h}, has_label_h{h}`. `ret_fwd = ln(adj_open[t+1+h]) - ln(adj_open[t+1])` (row shifts after asserting consecutive `t_idx`); `label_exit_idx = t_idx + 1 + h`; `has_label` = exit on the calendar and both prices exist. Cross-sectional columns only over `eligible & has_label` rows, per date: `excess = ret_fwd - mean`, `y_reg` = `excess` clipped at the per-date `labels.winsor_pct` quantiles (raw units, not standardised), `y_cls = 1[excess > 0]`, `rank_pct` = per-date average-rank percentile of `ret_fwd` (1.0 = best). Dates with fewer than 20 eligible labelled names get NaN cross-sectional labels. Rows are never dropped.
+- CLI: `build-labels` (config is validated first; failures exit 1).
+- Docs: `docs/data_dictionary.md` (new; labels documented, later stages append).
+- Tests: `tests/unit/test_{forward_returns,cli_s4,data_dictionary_doc}.py`, `tests/leakage/test_label_poisoned_future.py` (L1), `tests/integration/test_s4_real_data.py` (`needs_data`), `tests/fixtures/s4_labels.py`.
+
+**Measured on the real archive (assistant's sandbox; matches section III S4):** 514,075 rows (keys identical to `universe.parquet`); last decision date with a label (h=20) 2026-01-16 (`t_idx` 6549); 511,975 rows with `ret_fwd_h20` (exactly the last 21 rows of each of the 100 tickers lack one); 434,695 rows with cross-sectional labels (= eligible and labelled); first date with cross-sectional labels 2001-01-02; 40 to 98 eligible labelled names per date (median 67), so the 20-name minimum never triggers; `y_cls_h20` mean 0.5009; `excess_h20` std 0.0853, mean 0 per date (max |mean| 5e-17); 12,596 `y_reg_h20` values differ from `excess_h20` (clipped); KDP labels across the 2018-07-10 special dividend are smooth (raw open ratio < -1.0, label about +0.19 at `t` = ex-date minus 5).
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| Baseline (S3 tree) in the assistant's sandbox | 141/141 passed (not needs_data, not slow) | Calibration of the stand-ins below |
+| `pytest -m "not needs_data and not slow"` (sandbox) | 178 passed | 141 (S0-S3) + 37 new |
+| `pytest -m leakage` (sandbox) | 26 passed | 8 (L2, L3) + 18 new (L1 label poisoned-future, parametrised over h = 1, 5, 20) |
+| `pytest -m needs_data` (sandbox, real archive) | 46 passed | 38 (S1-S3) + 8 new; full tree 224 passed |
+| CLI `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels` (sandbox, real archive) | Work | Isolated copy of the repo layout |
+| Mutation checks (sandbox) | 18 of 20 caught; the other 2 are equivalent mutants | Entry at `t`, exit off by one (two ways), mean over all rows, eligibility dropped, no minimum-names rule (and off by one), `y_cls >= 0`, flipped rank, pooled cross-date mean, no clipping, clipped `excess`, standardised `y_reg`, `has_label` ignoring prices, no contiguity assertion, cross-ticker exit shift, close-to-close labels, swapped clip bounds. Equivalent: dropping the `exit_idx <= last_idx` clause (a missing price already implies it) and an ungrouped entry shift (the grouped exit is NaN on the same rows) |
+| Ruff | Not run | Unavailable offline; AST check for unused imports and a line-length/whitespace check found nothing. **Run `ruff check .` locally.** |
+| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+
+**Interpretations of the guide (none change a schema):**
+1. `labels.parquet` has exactly the section II.5 columns: no `t_idx`, `eligible` or flags (join the calendar, `universe.parquet` or silver when needed), as for `universe.parquet`.
+2. `ret_fwd_h{h}` is kept for ineligible rows (the guide allows it, for diagnostics); it is NaN exactly where `has_label_h{h}` is False. `excess_h`, `y_reg_h`, `y_cls_h`, `rank_pct_h` are NaN on every ineligible, unlabelled or thin-date row; `y_cls_h` is float64 (0.0, 1.0, NaN). `label_exit_idx_h` (int32) and `has_label_h` (bool) are always populated.
+3. Quantiles for the `y_reg_h` clip use pandas' default linear interpolation over the eligible labelled names of the date; `rank_pct_h` uses average ranks for ties (`rank(pct=True)`), so ranks lie in (0, 1].
+4. The 20-name minimum is the module constant `MIN_CROSS_SECTION` (no config key; `config.py` is unchanged), overridable through the keyword `min_names` for tests. Dates with 1 to 19 eligible labelled names raise one warning per horizon; dates with none (the 252-date seasoning period and the trailing horizon) are logged at info level, because they occur on every run.
+5. `adjusted_prices.parquet` and `universe.parquet` must have identical (ticker, date) keys, `t_idx` must agree with the calendar and be consecutive within each ticker; otherwise `LabelError` (exit 1 from the CLI). `labels.primary_horizon` must be in `labels.horizons`; `labels.winsor_pct` must be `[lo, hi]` with `0 <= lo < hi <= 1`.
+6. `has_label_h` is computed from the calendar end and price existence only, independent of eligibility.
+7. No locked-test guard (D19) and no dev label masking (L7): those belong to S6/S16, which must wrap `load_labels`. No `experiments/registry.csv` row is written (no experiment results), consistent with S1 to S3.
+8. `make features` already lists `build-labels`; `make data` is unchanged and does not run it (the guide's `make all` order places `build-labels` after `build-universe`).
+
+**Observations for later stages (informational):**
+- A label at `t` depends on `adj_open` at `t+1` and `t+1+h` of the same ticker and on the same-date cross-section; changing one open moves labels only on dates `j-1` and `j-1-h` (tested exactly). S6 purge/embargo must use `label_exit_idx_h`.
+- `excess_h20` has a standard deviation of about 0.085 over 20 trading days; `y_reg_h20` (clipped) is about 0.080.
