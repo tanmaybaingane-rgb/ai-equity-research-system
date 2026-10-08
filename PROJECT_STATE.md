@@ -2,9 +2,9 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-**Last updated:** 2026-10-06 (S4 implemented; awaiting local verification)
-**Git baseline:** `bbde223` "S3: adjusted series" (branch `master`, no remote configured)
-**Active environment:** Windows, Python 3.14 virtual environment (`.venv`), project folder under OneDrive
+*Last updated:* 2026-10-08 (S5 implemented and locally verified)
+*Git baseline:* 5ce8443 "Update README.md" (branch master, remote origin)
+*Active environment:* Windows, Python 3.14 virtual environment (.venv), project folder under OneDrive
 
 ---
 
@@ -16,8 +16,8 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | **S1** | Data ingestion, validation and quality flags | ? Done (local) | 2026-10-04 | `c251ae3` | Locally verified with the real archive and dependencies. See S1 log. |
 | **S2** | Security master and universe (eligibility) layer | ? Done (local) | 2026-10-04 | `102b7c8` | Locally verified with the real archive and dependencies. See S2 log. |
 | **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
-| **S4** | Label generation | 🟡 Implemented (not yet verified locally) | 2026-10-06 | - | Sandbox-verified with stand-ins (see S4 log). Run the local verification commands, then commit as `S4: labels`. |
-| **S5** | Feature engineering (stock-level, market-level, normalisation) | Not started | - | - | Milestone M1 (clean labelled panel) |
+| *S4* | Label generation | 🟢 Done (local) | 2026-10-06 | 9dbc5ec | Locally verified with the real archive and dependencies. |
+| *S5* | Feature engineering (stock-level, market-level, normalisation) | 🟢 Implemented and locally verified | 2026-10-08 | - | Feature registry, stock/market features, per-date normalisation, CLI, docs and leakage/integration tests. Ready for close-out commit. Milestone M1 (clean labelled panel). |
 | **S6** | Validation framework (splits, locked-test guard, leakage tooling) | Not started | - | - | - |
 | **S7** | Predictive evaluation library and baseline models | Not started | - | - | - |
 | **S8** | Models, tuning, calibration and walk-forward training | Not started | - | - | Milestone M2 |
@@ -258,3 +258,59 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 **Observations for later stages (informational):**
 - A label at `t` depends on `adj_open` at `t+1` and `t+1+h` of the same ticker and on the same-date cross-section; changing one open moves labels only on dates `j-1` and `j-1-h` (tested exactly). S6 purge/embargo must use `label_exit_idx_h`.
 - `excess_h20` has a standard deviation of about 0.085 over 20 trading days; `y_reg_h20` (clipped) is about 0.080.
+
+
+### S5: Feature engineering: implemented and locally verified
+
+**Delivered:**
+- `src/nasdaq100/features/registry.py`: 24 registered MVP features with feature specs, families, required-feature checks and registry validation.
+- `src/nasdaq100/features/stock_features.py`: 18 stock-level features with trailing-window calculations and causal two-pass beta.
+- `src/nasdaq100/features/market_features.py`: six market-level features and point-in-time eligible-name market aggregation.
+- `src/nasdaq100/features/normalize.py`: eligible-only, per-date winsorisation and rank-Gauss transformation with average ranks for ties.
+- `src/nasdaq100/features/build.py`: feature-building orchestrator and loaders; writes raw/model feature panels and market series without dropping rows.
+- `src/nasdaq100/cli.py`: `build-features` command with config validation and failure handling.
+- `docs/data_dictionary.md`: S5 feature documentation.
+- Tests covering registry, stock features, market features, normalisation, orchestration, CLI, documentation, real-data integration and leakage/poisoned-future cases.
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| `ruff check .` | ✅ Passed | Clean local run with Ruff. |
+| `git diff --check` | ✅ Passed | No whitespace errors. |
+| S5 test suite | ✅ Passed | All locally run S5 tests produced the expected results. |
+| Real-data feature build | ✅ Passed | Built successfully against the real frozen archive. |
+| Leakage tests | ✅ Passed | Future-poisoning and per-date rank-Gauss checks passed. |
+
+**Real-data observations:**
+- Feature construction preserves the full 514,075-row panel; rows are not dropped.
+- Stock and market features use causal/trailing information only.
+- Stock features have expected warm-up NaNs.
+- Market features have expected seasoning/warm-up NaNs.
+- Normalisation is performed per date over eligible names only.
+- `beta_126` is undefined during its initial trailing window, as expected.
+- Market aggregation uses names eligible at `t-1`, avoiding contemporaneous eligibility look-ahead.
+
+**S5 caveats / boundaries:**
+1. Market-series warm-up periods naturally contain NaNs.
+2. `check-leakage` is not implemented in S5; the dedicated leakage pytest suite provides S5 leakage coverage. The broader validation framework belongs to S6.
+3. Locked-test / D19 protection is not introduced in S5; it belongs to S6/S16.
+4. The existing frozen dataset remains explicitly survivorship-biased; S5 does not change that data-quality limitation.
+5. No experiment registry row is written because S5 produces features rather than experiment results.
+
+**Interpretations of the guide (none changes a schema):**
+1. The market series is NaN until the first name is eligible (no composition exists), so `mkt_logret` and `mkt_index` are NaN for the initial period. Consequently, `beta_126` and the windowed market features have their expected warm-up NaNs. The needs_data "first valid date 2001-01-02" is interpreted as the first eligible date with the other stock-level features defined.
+2. `mkt_index` is `exp(cumsum(mkt_logret))`, with the market series remaining NaN while `mkt_logret` is NaN. The implemented column name is `n_eligible`; the guide text calls it `n_eligible_t`.
+3. Standard deviations use sample (`ddof=1`) behavior. `beta_126` uses sample moments and is NaN when its required return window is incomplete or market variance is numerically zero. Log-based volume/liquidity features return NaN rather than infinity when their logarithm argument is invalid.
+4. `mkt_breadth_50` divides by eligible names with a defined `px_sma_50`; `xs_disp_21` is the sample standard deviation of `ret_21` over eligible names and requires at least two observations.
+5. Winsorisation is applied per date to eligible, non-NaN values before rank-Gauss transformation. With the current cross-section size, the specified 1%/99% clipping generally does not alter the rank ordering, but the implementation remains spec-faithful.
+6. Market-level features are copied to every row for their date, including ineligible rows, because they are date-level features. Stock-level features for ineligible rows remain NaN.
+7. The workflow mentions `check-leakage` for S5, but the CLI assignment places it in S6+. S5 therefore provides dedicated leakage tests rather than implementing the broader `check-leakage` command.
+8. `features/build.py` is a thin orchestration addition beyond the guide's explicitly listed feature files. S5 does not write an `experiments/registry.csv` row or apply the D19 locked-test guard; those concerns belong to later stages.
+
+**Observations for later stages (informational):**
+- `beta_126` and market-window features naturally contain warm-up NaNs. S6/S8 should explicitly decide whether any minimum-feature rule is required.
+- `features_model` contains per-date rank-Gauss-transformed stock-level features; `features_raw` and `features_model` should not be mixed casually in a model pipeline.
+- The existing dataset remains explicitly survivorship-biased; S5 does not change that limitation.
+
+**Milestone:** S5 establishes the clean labelled feature panel required for M1.

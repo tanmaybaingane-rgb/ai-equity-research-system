@@ -14,6 +14,8 @@ from nasdaq100.data.ingest import IngestError, run_ingest
 from nasdaq100.data.security_master import SecurityMasterError, run_build_master
 from nasdaq100.data.universe import UniverseError, run_build_universe
 from nasdaq100.data.validate import ValidationError, run_validate
+from nasdaq100.features.build import feature_columns, run_build_features
+from nasdaq100.features.registry import FeatureError
 from nasdaq100.labels.forward_returns import LabelError, run_build_labels
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
@@ -136,6 +138,23 @@ def cmd_build_labels(cfg: Config) -> int:
     return 0
 
 
+def cmd_build_features(cfg: Config) -> int:
+    """S5: build market_series, features_raw and features_model for the configured variant."""
+    try:
+        tables = run_build_features(cfg)
+    except (FeatureError, AdjustError, UniverseError, FileNotFoundError) as e:
+        logger.error(f"build-features failed: {e}")
+        return 1
+    n_feat = len(feature_columns(cfg.features.families))
+    model = tables.features_model
+    print(
+        f"Features [variant={cfg.project.variant}]: {len(model):,} rows, {n_feat} features "
+        f"({', '.join(cfg.features.families)}), {int(model['eligible'].sum()):,} eligible rows, "
+        f"{len(tables.market_series):,} market-series dates"
+    )
+    return 0
+
+
 def cmd_not_implemented(cmd_name: str) -> int:
     """Fallback handler for stages not yet implemented."""
     print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
@@ -239,6 +258,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build_adjusted(cfg)
     if args.command == "build-labels":
         return cmd_build_labels(cfg)
+    if args.command == "build-features":
+        return cmd_build_features(cfg)
 
     return cmd_not_implemented(args.command)
 
