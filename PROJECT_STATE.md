@@ -2,8 +2,8 @@
 
 Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
 
-*Last updated:* 2026-10-08 (S5 implemented and locally verified)
-*Git baseline:* 5ce8443 "Update README.md" (branch master, remote origin)
+*Last updated:* 2026-10-11 (S6 locally verified; ready for commit review)
+*Git baseline:* 7e0d5ab "S5: feature engineering" (tag M1, branch master, remote origin)
 *Active environment:* Windows, Python 3.14 virtual environment (.venv), project folder under OneDrive
 
 ---
@@ -17,8 +17,8 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | **S2** | Security master and universe (eligibility) layer | ? Done (local) | 2026-10-04 | `102b7c8` | Locally verified with the real archive and dependencies. See S2 log. |
 | **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
 | *S4* | Label generation | 🟢 Done (local) | 2026-10-06 | 9dbc5ec | Locally verified with the real archive and dependencies. |
-| *S5* | Feature engineering (stock-level, market-level, normalisation) | 🟢 Implemented and locally verified | 2026-10-08 | - | Feature registry, stock/market features, per-date normalisation, CLI, docs and leakage/integration tests. Ready for close-out commit. Milestone M1 (clean labelled panel). |
-| **S6** | Validation framework (splits, locked-test guard, leakage tooling) | Not started | - | - | - |
+| *S5* | Feature engineering (stock-level, market-level, normalisation) | 🟢 Implemented and locally verified | 2026-10-08 | 7e0d5ab | Feature registry, stock/market features, per-date normalisation, CLI, docs and leakage/integration tests. Milestone M1 (clean labelled panel). |
+| **S6** | Validation framework (splits, locked-test guard, leakage tooling) | 🟢 Implemented and locally verified | 2026-10-10 | - | Baseline M1 (`7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`). Locally verified on Windows .venv: 411 regular tests, 169 leakage tests and 62 real-data tests passed. The check-leakage CLI generated the fold plan; Ruff and git diff --check passed. Ready for commit review.|
 | **S7** | Predictive evaluation library and baseline models | Not started | - | - | - |
 | **S8** | Models, tuning, calibration and walk-forward training | Not started | - | - | Milestone M2 |
 | **S9** | Signal engine | Not started | - | - | - |
@@ -153,10 +153,10 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 ## Exact next step
 
-1. Verify S4 locally (see the S4 log: `pytest -m "not needs_data"`, `pytest -m leakage`, `python -m nasdaq100.cli build-labels`, `pytest -m needs_data`, `ruff check .`), record the results, then commit as `S4: labels`.
-2. Create the S5 handoff ZIP from the committed tree, excluding `.git` and `.venv`.
-3. Start a new Claude chat for **S5 Feature engineering**. Include the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md`, and the S5 handoff ZIP.
-4. S5 must preserve S0-S4 and implement **S5 only**.
+1. Review the S6 changes and local verification results, then commit locally as `S6: validation framework and locked-test guard`. Do not push to GitHub until the changes have been reviewed.
+2. Create the S7 handoff ZIP from the committed tree, excluding `.git` and `.venv`.
+3. Start the **S7 Predictive evaluation library and baseline models** stage with the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md` and the handoff ZIP. S7 and later must read features and labels only through `load_panel` and the S6 folds.
+4. S7 must preserve S0-S6 and implement **S7 only**.
 
 ## File Quick Reference
 
@@ -166,7 +166,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `configs/base.yaml` | All default parameters; `--config` override files layer on top |
 | `src/nasdaq100/config.py` | Config loader and `config_hash` |
 | `src/nasdaq100/paths.py` | All artifact path helpers (variant-namespaced) |
-| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels` work; other commands are stubs until their stage) |
+| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels`, `build-features`, `check-leakage` work; other commands are stubs until their stage) |
 | `src/nasdaq100/utils/io.py` | Parquet I/O, registry append, run IDs |
 | `src/nasdaq100/utils/calendar.py` | Global trading calendar, `t_idx` arithmetic, rebalance dates |
 | `src/nasdaq100/data/ingest.py` | Zip -> bronze, calendar, manifest, frozen-dataset guard |
@@ -175,13 +175,18 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | `src/nasdaq100/data/security_master.py` | Curated exceptions + derived security master (`data/reference/security_master.csv`) |
 | `src/nasdaq100/data/universe.py` | Eligibility builder (single source of truth) and `load_universe(cfg)` |
 | `src/nasdaq100/data/adjust.py` | Adjusted prices and `logret_cc` (S3) and `load_adjusted(cfg)` |
+| `src/nasdaq100/validation/folds.py` | `Fold`, `make_fold`, `make_dev_folds`, `make_tuning_folds`, `make_locked_folds` (token), `build_fold_plan`, `write_fold_plan` (S6) |
+| `src/nasdaq100/validation/guards.py` | `LockedTestError`, `assert_not_locked`, `open_locked_test` (S16 only), tokens, boundary indices (S6) |
+| `src/nasdaq100/validation/leakage.py` | `assert_folds_valid`, `poison_future`, `null_panel_test` (skeleton), `SpyEstimator`, `run_leakage_suite` (S6) |
+| `src/nasdaq100/data/loaders.py` | `load_panel(cfg, features, split, labels=True)`: the only supported way to read features and labels (S6) |
 | `src/nasdaq100/labels/forward_returns.py` | Forward-return labels (S4), `build_labels`, `run_build_labels`, `load_labels(cfg)` |
 | `data/reference/security_master_curated.csv` | Hand-curated exceptions (AZN, GOOG, stitching suspects); tracked |
-| `docs/data_dictionary.md` | Column-level documentation of processed tables (labels so far) |
+| `docs/data_dictionary.md` | Column-level documentation of processed tables (labels, features, the `load_panel` panel, `fold_plan.json`) |
 | `docs/survivorship.md` | Survivorship evidence, allowed claims, point-in-time plug-in point |
 | `tests/fixtures/toy_data.py` | Synthetic price and panel generators |
 | `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
 | `tests/fixtures/s2_silver.py` | Liquid synthetic silver tables, curated frames and configs for S2 tests |
+| `tests/fixtures/s6_validation.py` | Holiday-aware synthetic calendars, configs, protocol/token helpers and panel tables for S6 tests |
 | `tests/fixtures/s4_labels.py` | Synthetic adjusted-price and universe tables (full S3 / S2 schemas) for S4 tests |
 | `experiments/registry.csv` | Append-only experiment log (header only so far) |
 
@@ -314,3 +319,64 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 - The existing dataset remains explicitly survivorship-biased; S5 does not change that limitation.
 
 **Milestone:** S5 establishes the clean labelled feature panel required for M1.
+
+### S6: Validation framework (splits, locked-test guard, leakage tooling): implemented and locally verified
+
+**Baseline:** M1, commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (S0-S5 complete). No S6 commit hash yet; nothing has been committed or pushed.
+
+**Scope and delivered components** (Master Guide Part III S6):
+- `src/nasdaq100/validation/folds.py`: `Fold` (`fold_id, kind, test_year, test_start_idx, test_end_idx, train_core_idx, calib_idx, gap, train_end_idx, base_rate`), `make_fold` (the algorithm for one test period), `make_dev_folds(cfg)` (12 folds, test years 2008-2019), `make_tuning_folds(cfg)` (validation years 2005-2007, no calibration block, `t <= tuning_max_idx`), `make_locked_folds(cfg, token)` (2020-2026, needs the guard token), `build_fold_plan` / `write_fold_plan`, `purge_gap`, `year_bounds`.
+- `src/nasdaq100/validation/guards.py`: `LockedTestError`, `assert_not_locked(dates_or_idx, cfg=None, *, calendar=None, token=None)`, `open_locked_test(cfg, protocol_file=None)` (checks `frozen == true`, records `test_opened` / `test_opened_at`, logs a warning, returns a `LockedAccessToken`), `require_token`, `is_valid_token`, and the boundary helpers `locked_start_idx`, `last_dev_label_idx` (5009), `tuning_max_idx` (1988).
+- `src/nasdaq100/validation/leakage.py`: `assert_folds_valid`, `poison_future(panel, t_idx)`, `null_panel_test(pipeline_fn, seeds, panel_factory=None)` (skeleton for S8), `SpyEstimator` (max `t_idx` seen in `fit`, for S8), `run_leakage_suite`, `LeakageError`.
+- `src/nasdaq100/data/loaders.py`: `load_panel(cfg, features, split, labels=True, *, token=None, ...)` and the pure `build_panel`.
+- CLI `check-leakage` (config validated first): writes `artifacts/{variant}/fold_plan.json`, then runs `pytest -m leakage`; exit 0 only if the plan was written and every leakage test passed.
+- Tests: `tests/unit/test_{folds,guards,loaders,leakage_tools,cli_s6}.py`, `tests/leakage/test_{fold_validity,dev_label_masking,locked_guard}.py` (L6, L7, L8), `tests/integration/test_s6_real_data.py` (`needs_data`), fixtures `tests/fixtures/s6_validation.py`. `docs/data_dictionary.md` documents the `load_panel` panel and `fold_plan.json`.
+
+**Files modified (S0-S5 files):** `src/nasdaq100/cli.py` (three imports, `cmd_check_leakage`, one dispatch branch; the `check-leakage` parser entry already existed) and `docs/data_dictionary.md` (two sections appended). No S0-S5 behaviour changes: no config, path, test or data changes; `load_labels`, `load_features_model`, `load_features_raw`, `load_universe` are unchanged and remain unguarded building blocks (see interpretation 8).
+
+**Real-calendar results (assistant's sandbox, real archive, stand-in parquet engine):** locked start `t_idx` 5031 (2020-01-02); last dev date 5030 (2019-12-31); `last_dev_label_idx` 5009 (2019-11-29); `tuning_max_idx` 1988 (2007-11-29); `first_train_idx` 252; gap 26. Dev fold 2008: `t0` 2010, `train_end` 1983 (2007-11-21), calibration `[1480, 1983]` and core `[252, 1453]` before stride (guide worked example; with `train_stride=5` the blocks are `[1482, 1982]` with 101 dates and `[252, 1452]` with 241 dates; core span 1,201-1,202 dates, about 4.8 years). 12 dev folds (test years 2008-2019, last test date 2019-12-31), 3 tuning folds (2005, 2006, 2007; the last ends at 1988), 7 locked folds (2020-2026, last test date 2026-02-18). Dev panel: last date 2019-12-31, labels NaN and `has_label_h20` False for `t_idx` 5010-5030, features kept; tuning panel ends at `t_idx` 1988; `load_panel("locked")` raises without a token and returns all 6,571 dates with 511,975 labelled rows with one.
+
+**Acceptance criteria:**
+
+| Criterion (guide) | Met | Evidence |
+|---|---|---|
+| Property tests pass (folds valid, exact gap, off-by-one, worked example, stride, rolling window) | Yes (sandbox) | `tests/leakage/test_fold_validity.py` (60 random draws of calendar, h in {5, 20, 60}, embargo, calibration, stride, window, checked against an independent re-derivation), `tests/unit/test_folds.py` |
+| Gap formula exact; row at `t0 - gap - 1` allowed, `t0 - gap` not | Yes | `test_gap_off_by_one_for_every_horizon`, `test_off_by_one_row_at_t0_minus_gap_minus_1_allowed_t0_minus_gap_blocked` |
+| Dev folds never include dates on or after 2020-01-02, also as training rows | Yes | L6 tests, `assert_folds_valid(..., locked_start_idx=5031)` on the real calendar |
+| Loader NaN-masks dev labels beyond 5009; dev data contain no date >= 2020-01-02 (L7) | Yes | `tests/leakage/test_dev_label_masking.py`, real-data test |
+| `load_panel("locked")` raises without protocol and with `frozen=false`; boundary 2019-12-31 allowed, 2020-01-02 blocked (L8) | Yes | `tests/leakage/test_locked_guard.py`, `tests/unit/test_guards.py` |
+| Tuning split ends at 1988 | Yes | `tests/unit/test_loaders.py`, real-data test |
+| `fold_plan.json` lists 12 dev folds with sensible sizes (fold 2008 core about 4.8 years, about 1,200 dates before stride) | Yes (sandbox) | `check-leakage` wrote the plan; `tests/integration/test_s6_real_data.py` |
+| The guard cannot be bypassed via public loaders | Yes, by construction and by tests | Locked data need a token that only `open_locked_test` issues; structural tests: nothing in `src/` calls or imports `open_locked_test` except `guards.py`, and only `data/loaders.py` imports `load_labels` / `load_features_model` / `load_features_raw` |
+| Committed as `S6: validation framework and locked-test guard` | Pending | Not committed (patch delivered for review) |
+
+**Verification record:**
+
+| Check | Result | Note |
+|---|---|---|
+| Baseline (M1 tree) in the assistant's sandbox | 337/337 passed | Calibration of the stand-ins below |
+| `pytest -m "not needs_data and not slow"` (sandbox) | 411 passed | 282 (S0-S5) + 129 new |
+| `pytest -m leakage` (sandbox) | 169 passed | 91 (L1-L5) + 78 new (L6, L7, L8) |
+| `pytest -m needs_data` (sandbox, real archive) | 62 passed | 55 (S1-S5) + 7 new; full tree 473 passed |
+| `python -m nasdaq100.cli check-leakage` (sandbox) | Fold plan written; the pytest step could not run | The sandbox `pytest` is a stand-in without `python -m pytest`; **run it locally** |
+| Mutation checks (sandbox) | 30 of 30 caught | Off-by-one gap / train_end / calibration / core purge, stride anchor, window, tuning cap, locked start clamp, boundary comparisons, frozen check, token validity, mask cap and flags, split filters, guard removals, validity-check weakening. One genuine gap (locked start not clamped to the configured lock) found and closed with a test |
+| Ruff | Not run | Unavailable offline; AST scans for unused imports, `zip(strict=)`, constant `getattr` and whitespace found nothing. **Run `ruff check .` locally** |
+| **Local run with real dependencies (Windows .venv)** | Passed | 411 regular tests passed; 169 leakage tests passed; `check-leakage` generated the fold plan; 62 real-data tests passed; `ruff check .` and `git diff --check` passed. Fold example `dev_2008` matched the expected values. |
+
+**Interpretations of the guide (none changes a schema or an earlier stage):**
+1. `load_panel` adds a `t_idx` column (int32, from the calendar) to the join of `features_model`, `labels` and `eligible`: folds are defined on `t_idx`. It verifies that `labels`, `features_model` and `universe` have identical keys and identical `eligible` before joining. Column order: `ticker, date, t_idx, eligible`, features, the seven primary-horizon label columns.
+2. `split="locked"` returns the complete panel (all dates, true labels) and only with a valid token: the S16 folds 2021-2026 train on earlier locked years (guide S16). `split="dev"` and `"tuning"` additionally run `assert_not_locked` on their output.
+3. In dev mode `label_exit_idx_h20` is not masked (an integer calendar number, not price information); `ret_fwd`, `excess`, `y_reg`, `y_cls`, `rank_pct` are NaN and `has_label` False for `t_idx > 5009`.
+4. `fold_plan.json` is written with the existing `paths.fold_plan_path(variant)`, i.e. `artifacts/{variant}/fold_plan.json` (`artifacts/base/fold_plan.json`), keeping S0's variant namespacing. The guide and `.gitignore` name `artifacts/fold_plan.json` (the only fold-plan path exempt from the artifacts ignore rule), so the file is git-ignored here; nothing changed in `paths.py` or `.gitignore`. It lists the dev and tuning folds and the boundary indices; locked folds are deliberately absent.
+5. `assert_not_locked` accepts dates or integer `t_idx` (resolved with a calendar, default the stored one); the boundary is on the decision date (>= `validation.locked_test_start`). A valid token disables the check.
+6. `open_locked_test(cfg, protocol_file=None)` writes `test_opened = true` and `test_opened_at` (UTC) into the protocol and never overwrites an earlier timestamp; tokens are valid only in the issuing process (`_ISSUED_NONCES`), which makes peeking a deliberate and logged act, not a cryptographic barrier. Rerun flagging (`rerun_count`, L18) belongs to S16.
+7. `make_fold` thins both blocks by `(t_idx - first_train_idx) % train_stride == 0` (anchor `first_train_idx`, 252 by default); the test period is never thinned. Tuning folds restrict the validation dates to `t <= tuning_max_idx` (the 2007 fold ends at 1988) and have no calibration block. `first_train_idx` is the first trading date on or after `validation.first_train_decision_date`.
+8. The S4/S5 table readers remain public and unguarded; a structural test restricts their importers to `data/loaders.py`. S7 and later must read features and labels through `load_panel`. The same kind of test allows only `validation/guards.py` to mention `open_locked_test`: **S16 must extend that allow-list** with its `locked-test` command.
+9. `null_panel_test` is a skeleton: the pipeline returns `ic_by_date` (non-overlapping per-date ICs) and optionally `auc`; criteria from S8 (pooled mean IC within 2.5 SE, at most 20% of the runs with |t| > 2, mean AUC within 0.02 of 0.5, at least 10 seeds). Its default panel factory is the S0 `make_null_panel` (imported lazily from the test fixtures; pass `panel_factory` otherwise). `SpyEstimator.fit(X, y, t_idx=...)` takes the decision dates from the argument, a `t_idx` column or an index named `t_idx`.
+10. `check-leakage` runs `python -m pytest -m leakage -q` in a subprocess from the repository root; the sandbox could only verify the plan-writing half.
+
+**Observations for later stages (informational):**
+- Dev *predictions* are made on all eligible rows of each test year (including December 2019 where labels are masked); *evaluation* must use only rows with `has_label` (S7). The rebalance schedule and the dev backtest (S11) must not use decision dates after 2019-11-29 for evaluated results.
+- `beta_126` and market-window features have warm-up NaNs from 2001; with `first_train_decision_date` 2001-01-02 the first training rows have NaN market features. S8 must decide on a minimum-feature rule explicitly.
+- Fold training blocks hold decision dates; the trainer selects `eligible & has_label` rows within them. `Fold.base_rate` is filled at fit time (S8).
+- `tests/leakage` now holds L1-L8; `pytest -m leakage` is the gate for every later stage.

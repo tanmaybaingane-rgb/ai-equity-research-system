@@ -117,3 +117,35 @@ where `logret_cc` enters.
   standard deviation and a non-zero mean on such dates.
 - The locked-test guard (decision D19) and the dev masking belong to S6/S16, which must wrap the
   loaders.
+
+## Panel returned by `load_panel` (Stage S6; not persisted)
+
+`nasdaq100.data.loaders.load_panel(cfg, features, split, labels=True)` is the only supported way
+for models to read features and labels (the table readers `load_features_model` / `load_labels`
+are its building blocks; a structural test fails if other code imports them). It joins
+`features_model`, the primary-horizon label columns of `labels` and `eligible` on
+(`ticker`, `date`) after checking that `labels`, `features_model` and `universe` have identical
+keys and identical `eligible`. Columns: `ticker`, `date`, `t_idx` (int32, from the calendar),
+`eligible`, the requested features (`None`: every feature of `features.families`), then, if
+`labels=True`, `ret_fwd_h{h}`, `excess_h{h}`, `y_reg_h{h}`, `y_cls_h{h}`, `rank_pct_h{h}`,
+`label_exit_idx_h{h}`, `has_label_h{h}` for `h = labels.primary_horizon`. Sorted by
+(`ticker`, `date`).
+
+| `split` | Rows | Label columns |
+|---|---|---|
+| `"dev"` | decision dates before `validation.locked_test_start` (last date 2019-12-31, `t_idx` 5030) | NaN (and `has_label_h{h}` False) for `t_idx > last_dev_label_idx = locked_start_idx - (h + 2)` = 5009 (2019-11-29): the labels of December 2019 use open prices of January 2020 (decision C4). Features are still returned for the final dates. `label_exit_idx_h{h}` stays populated (a calendar number). |
+| `"tuning"` | `t_idx <= tuning_max_idx = idx(first date after validation.tuning_end_date) - (h + 2)` = 1988 (2007-11-29) | all labels resolved before 2008 (decision C9) |
+| `"locked"` | every date, true labels | only with the token returned by `open_locked_test` (S16); otherwise `LockedTestError` before anything is read |
+
+## `fold_plan.json` (Stage S6)
+
+Written by `python -m nasdaq100.cli check-leakage` to `artifacts/{variant}/fold_plan.json`
+(`paths.fold_plan_path`), deterministic (no timestamps). Top level: `config_hash`, `variant`,
+`horizon`, `embargo_days`, `gap` (`h + 1 + embargo` = 26), `calibration_days`,
+`train_window_days`, `train_stride`, `first_train_idx` (252), `locked_test_start`,
+`locked_test_start_idx` (5031), `last_dev_idx` (5030), `last_dev_label_idx` (5009),
+`tuning_max_idx` (1988), `calendar_n_days`, `dev_folds` (12) and `tuning_folds` (3). Each fold:
+`fold_id`, `kind`, `test_year`, test start / end index and date, `n_test_dates`, `gap`,
+`train_end_idx` / `train_end_date`, and the `core` and `calibration` blocks (`n_dates` after the
+stride, start / end index and date, `span_days` before the stride). Locked folds are
+deliberately absent (they need the guard token).

@@ -19,6 +19,9 @@ from nasdaq100.features.registry import FeatureError
 from nasdaq100.labels.forward_returns import LabelError, run_build_labels
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
+from nasdaq100.validation.folds import FoldError, write_fold_plan
+from nasdaq100.validation.guards import LockedTestError
+from nasdaq100.validation.leakage import run_leakage_suite
 
 logger = get_logger("cli")
 
@@ -155,6 +158,31 @@ def cmd_build_features(cfg: Config) -> int:
     return 0
 
 
+def cmd_check_leakage(cfg: Config) -> int:
+    """S6: write fold_plan.json and run the leakage-marked tests (``pytest -m leakage``).
+
+    The fold plan needs the trading calendar (``ingest``); without it the plan is not written
+    and the command fails, but the leakage tests are still run. Exit code 0 only if the plan was
+    written and every leakage test passed.
+    """
+    plan_ok = True
+    try:
+        plan = write_fold_plan(cfg)
+        print(
+            f"Fold plan written [variant={cfg.project.variant}]: {len(plan['dev_folds'])} dev "
+            f"folds, {len(plan['tuning_folds'])} tuning folds, gap {plan['gap']}, "
+            f"last dev label idx {plan['last_dev_label_idx']}, tuning max idx "
+            f"{plan['tuning_max_idx']}"
+        )
+    except (FoldError, LockedTestError, FileNotFoundError) as e:
+        logger.error(f"check-leakage: fold plan not written: {e}")
+        plan_ok = False
+    code = run_leakage_suite()
+    if code != 0:
+        logger.error(f"check-leakage: leakage tests failed (pytest exit code {code})")
+    return 0 if plan_ok and code == 0 else 1
+
+
 def cmd_not_implemented(cmd_name: str) -> int:
     """Fallback handler for stages not yet implemented."""
     print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
@@ -260,6 +288,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build_labels(cfg)
     if args.command == "build-features":
         return cmd_build_features(cfg)
+    if args.command == "check-leakage":
+        return cmd_check_leakage(cfg)
 
     return cmd_not_implemented(args.command)
 
