@@ -18,7 +18,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
 | *S4* | Label generation | 🟢 Done (local) | 2026-10-06 | 9dbc5ec | Locally verified with the real archive and dependencies. |
 | *S5* | Feature engineering (stock-level, market-level, normalisation) | 🟢 Implemented and locally verified | 2026-10-08 | 7e0d5ab | Feature registry, stock/market features, per-date normalisation, CLI, docs and leakage/integration tests. Milestone M1 (clean labelled panel). |
-| **S6** | Validation framework (splits, locked-test guard, leakage tooling) | 🟢 Implemented and locally verified | 2026-10-10 | - | Baseline M1 (`7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`). Locally verified on Windows .venv: 411 regular tests, 169 leakage tests and 62 real-data tests passed. The check-leakage CLI generated the fold plan; Ruff and git diff --check passed. Ready for commit review.|
+| **S6** | Validation framework (splits, locked-test guard, leakage tooling) | 🟢 Implemented and locally verified | 2026-10-10 | ac02dbb | Baseline M1 (`7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`). Locally verified on Windows .venv: 411 regular tests, 169 leakage tests and 62 real-data tests passed. The check-leakage CLI generated the fold plan; Ruff and git diff --check passed. Committed locally as ac02dbb; push pending.|
 | **S7** | Predictive evaluation library and baseline models | Not started | - | - | - |
 | **S8** | Models, tuning, calibration and walk-forward training | Not started | - | - | Milestone M2 |
 | **S9** | Signal engine | Not started | - | - | - |
@@ -153,7 +153,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 ## Exact next step
 
-1. Review the S6 changes and local verification results, then commit locally as `S6: validation framework and locked-test guard`. Do not push to GitHub until the changes have been reviewed.
+1. Confirm the S6 implementation and verification results, then push the S6 commit to GitHub. Record the resulting commit hash and push status in `PROJECT_STATE.md`.
 2. Create the S7 handoff ZIP from the committed tree, excluding `.git` and `.venv`.
 3. Start the **S7 Predictive evaluation library and baseline models** stage with the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md` and the handoff ZIP. S7 and later must read features and labels only through `load_panel` and the S6 folds.
 4. S7 must preserve S0-S6 and implement **S7 only**.
@@ -322,7 +322,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 
 ### S6: Validation framework (splits, locked-test guard, leakage tooling): implemented and locally verified
 
-**Baseline:** M1, commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (S0-S5 complete). No S6 commit hash yet; nothing has been committed or pushed.
+**Baseline:** M1, commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (S0-S5 complete). S6 implementation commit: `ac02dbb` (committed locally; push pending).
 
 **Scope and delivered components** (Master Guide Part III S6):
 - `src/nasdaq100/validation/folds.py`: `Fold` (`fold_id, kind, test_year, test_start_idx, test_end_idx, train_core_idx, calib_idx, gap, train_end_idx, base_rate`), `make_fold` (the algorithm for one test period), `make_dev_folds(cfg)` (12 folds, test years 2008-2019), `make_tuning_folds(cfg)` (validation years 2005-2007, no calibration block, `t <= tuning_max_idx`), `make_locked_folds(cfg, token)` (2020-2026, needs the guard token), `build_fold_plan` / `write_fold_plan`, `purge_gap`, `year_bounds`.
@@ -348,7 +348,7 @@ Living progress log (Master Project Build Guide §II.6). Updated at the end of e
 | Tuning split ends at 1988 | Yes | `tests/unit/test_loaders.py`, real-data test |
 | `fold_plan.json` lists 12 dev folds with sensible sizes (fold 2008 core about 4.8 years, about 1,200 dates before stride) | Yes (sandbox) | `check-leakage` wrote the plan; `tests/integration/test_s6_real_data.py` |
 | The guard cannot be bypassed via public loaders | Yes, by construction and by tests | Locked data need a token that only `open_locked_test` issues; structural tests: nothing in `src/` calls or imports `open_locked_test` except `guards.py`, and only `data/loaders.py` imports `load_labels` / `load_features_model` / `load_features_raw` |
-| Committed as `S6: validation framework and locked-test guard` | Pending | Not committed (patch delivered for review) |
+| Committed as `S6: validation framework and locked-test guard` | Yes (local) | ac02dbb |
 
 **Verification record:**
 
