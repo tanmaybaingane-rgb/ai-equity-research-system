@@ -1,382 +1,388 @@
 # Project State: AI-Driven Equity Research & Portfolio Decision Support System
 
-Living progress log (Master Project Build Guide §II.6). Updated at the end of every stage.
+> **Purpose:** This file is the concise, accurate handoff for the next implementation stage. `MASTER_PROJECT_BUILD_GUIDE.md` remains the authoritative specification for stage requirements. This file records what is implemented, verified, committed, known to differ from the guide, and what must happen next.
+>
+> **Maintenance rule:** Update this file only after the stage implementation has been tested on the project owner's local environment, committed, and pushed. Then commit and push the state-file update before starting the next stage. Do not treat assistant-sandbox test results as local verification.
 
-*Last updated:* 2026-10-11 (S6 locally verified; ready for commit review)
-*Git baseline:* 7e0d5ab "S5: feature engineering" (tag M1, branch master, remote origin)
-*Active environment:* Windows, Python 3.14 virtual environment (.venv), project folder under OneDrive
+## 1. Current project snapshot
 
----
+- **Project:** AI-driven equity research and portfolio decision support system.
+- **Repository:** <https://github.com/tanmaybaingane-rgb/ai-equity-research-system>
+- **Branch:** `master`
+- **Current stage:** S6 complete and pushed; **S7 has not started**.
+- **Last stage implementation commit:** `ac02dbb` — `S6: validation framework and locked-test guard` (pushed).
+- **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (`7e0d5ab` in the commit list).
+- **Repository checkpoint before this state-file revision:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) — `docs: record S6 verification status`. The GitHub screenshots and the earlier local `git ls-remote` output show this checkpoint on `origin/master`.
+- **Environment used for S6 verification:** Windows, Python 3.14, project `.venv`.
+- **Project path used in the local workflow:** `C:\Users\Asus\Projects\ai-equity-research-system`.
+- **Last updated:** 2026-10-12.
 
-## Stage Checklist
+**How to interpret the commit fields:** The commit containing a future revision of this file cannot record its own final hash without requiring another documentation commit. Therefore, this file records the last stage implementation commit and the checkpoint from which this revision was prepared; use `git log -1` and `git ls-remote origin refs/heads/master` for the exact current Git head. Git is authoritative for current branch state.
 
-| Stage | Name | Status | Completed | Commit | Notes |
-|:---|:---|:---:|:---:|:---:|:---|
-| **S0** | Foundations (repository, configuration, tooling) | ? Done (local) | 2026-10-03 | `86767bb` | Initial foundations in `93f1abb`; close-out in `86767bb`. CI not run (no remote). See S0 log. |
-| **S1** | Data ingestion, validation and quality flags | ? Done (local) | 2026-10-04 | `c251ae3` | Locally verified with the real archive and dependencies. See S1 log. |
-| **S2** | Security master and universe (eligibility) layer | ? Done (local) | 2026-10-04 | `102b7c8` | Locally verified with the real archive and dependencies. See S2 log. |
-| **S3** | Adjusted price series and returns | ? Done (local) | 2026-10-04 | `bbde223` | Locally verified with the real archive and dependencies. See S3 log. |
-| *S4* | Label generation | 🟢 Done (local) | 2026-10-06 | 9dbc5ec | Locally verified with the real archive and dependencies. |
-| *S5* | Feature engineering (stock-level, market-level, normalisation) | 🟢 Implemented and locally verified | 2026-10-08 | 7e0d5ab | Feature registry, stock/market features, per-date normalisation, CLI, docs and leakage/integration tests. Milestone M1 (clean labelled panel). |
-| **S6** | Validation framework (splits, locked-test guard, leakage tooling) | 🟢 Implemented and locally verified | 2026-10-10 | ac02dbb | Baseline M1 (`7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`). Locally verified on Windows .venv: 411 regular tests, 169 leakage tests and 62 real-data tests passed. The check-leakage CLI generated the fold plan; Ruff and git diff --check passed. Committed locally as ac02dbb; push pending.|
-| **S7** | Predictive evaluation library and baseline models | Not started | - | - | - |
-| **S8** | Models, tuning, calibration and walk-forward training | Not started | - | - | Milestone M2 |
-| **S9** | Signal engine | Not started | - | - | - |
-| **S10** | Risk layer and portfolio construction | Not started | - | - | - |
-| **S11** | Backtest engine (execution simulation, costs, benchmarks) | Not started | - | - | - |
-| **S12** | Rule-based market regimes (reporting lens) | Not started | - | - | - |
-| **S13** | Strategy evaluation, ablations, robustness and dev evidence package | Not started | - | - | Milestone M3 |
-| **S14** | Explainability | Not started | - | - | - |
-| **S15** | Streamlit dashboard | Not started | - | - | - |
-| **S16** | Locked test and final report | Not started | - | - | Milestone M4 (single run) |
-| **S17** | Packaging, documentation and reproducibility check | Not started | - | - | - |
+## 2. Stage checklist
 
----
+| Stage | Scope | Status | Implementation commit | Verification record in this file |
+|---|---|---|---|---|
+| S0 | Foundations, configuration, tooling | Complete and pushed | `93f1abb` foundations; `86767bb` close-out | Implementation, conventions, and remaining caveats: §4.1. Historical sandbox counts are not local evidence. |
+| S1 | Ingestion, validation, quality flags | Complete and pushed | `c251ae3` | Outputs, frozen-data rules, archive findings, and test inventory: §4.2. Historical metrics are labelled by provenance. |
+| S2 | Security master and universe | Complete and pushed | `102b7c8` | Curation, eligibility rules, universe counts, and test inventory: §4.3. |
+| S3 | Adjusted prices and returns | Complete and pushed | `bbde223` | Output schema, formulas, numerical edge-case handling, and test inventory: §4.4. |
+| S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: §4.5. |
+| S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: §4.6. |
+| S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: §4.7. The previous state-documentation checkpoint is `dd68e32`. |
+| S7 | Predictive evaluation library and baseline models | **Not started** | — | Next stage. Follow `MASTER_PROJECT_BUILD_GUIDE.md` for scope and acceptance criteria. |
+| S8 | Models, tuning, calibration, walk-forward training | Not started | — | Milestone M2. |
+| S9 | Signal engine | Not started | — | — |
+| S10 | Risk layer and portfolio construction | Not started | — | — |
+| S11 | Backtest engine: execution, costs, benchmarks | Not started | — | — |
+| S12 | Rule-based market regimes | Not started | — | — |
+| S13 | Strategy evaluation, ablations, robustness, development evidence | Not started | — | Milestone M3. |
+| S14 | Explainability | Not started | — | — |
+| S15 | Streamlit dashboard | Not started | — | — |
+| S16 | Locked test and final report | Not started | — | Milestone M4; single controlled run. See S6 constraints in §4.7 and §5. |
+| S17 | Packaging, documentation, reproducibility | Not started | — | — |
 
-## Stage Log
+### Verification evidence policy
 
-### S0: Foundations: done (local)
+1. A stage's implementation being committed/pushed and that stage's local tests passing are separate facts; record both separately.
+2. Record exact commands run in the owner's real Windows `.venv`, their actual outputs, and whether the frozen real archive was used.
+3. **Assistant-sandbox results are not local verification.** If retained for historical context, label them explicitly as sandbox-only and keep them outside the authoritative local verification table. Sandbox use of dependency stand-ins is not equivalent to testing against the real installed dependencies.
+4. Do not leave “run locally”, “push pending”, or “awaiting local verification” notes once that work has actually been completed. Conversely, do not mark a check passed unless its real command was run and observed.
+5. Marker-specific pytest results can overlap. Never add marker-suite counts and describe the sum as a unique full-suite count unless a command explicitly measured the full suite.
+6. If reliable older local logs are not available, say that detailed historic totals are unavailable rather than inventing them. This revision deliberately does not relabel old sandbox counts as local runs.
 
-**Delivered (all present in the repository):**
-- Package skeleton `src/nasdaq100/` with all sub-packages as empty stubs; working modules: `config.py`, `paths.py`, `cli.py`, `utils/{hashing,io,logging,seeds}.py`.
-- `configs/base.yaml` (matches guide §II.4 key-for-key) and `configs/data_expectations.yaml` (verified dataset facts, §I.3).
-- `pyproject.toml` (runtime deps, `dev` and `notebooks` extras, pytest markers, ruff config), `Makefile`, `.gitignore`, `.github/workflows/ci.yml`, `README.md` (survivorship notice), `docs/decisions/0000-template.md`, header-only `experiments/registry.csv`.
-- Tests: `tests/conftest.py` (fixtures and the `needs_data` auto-skip hook), `tests/fixtures/toy_data.py` (`make_toy_prices`, `make_planted_signal_panel`, `make_null_panel`), unit tests for config, paths, utils, toy data, CLI and the conftest hook.
+## 3. Frozen data and research constraints
 
-**Verification record:**
+### Historical archive facts
 
-| Check | Result | Note |
+The project uses the frozen historical archive referenced by the S1 verification record:
+
+- 514,075 daily rows.
+- 100 tickers.
+- 6,571 trading-calendar dates.
+- Recorded date span: 2000-01-03 through 2026-02-18.
+- Recorded ZIP SHA-256 begins `e70ce876` and ends `e8d2`; use the archive manifest for the full digest.
+- The archive is **survivorship-biased**. This limitation is documented in `docs/survivorship.md`; do not describe the universe or results as survivorship-bias-free.
+
+### Universe facts
+
+- The security master has 100 tickers, with 98 included by the current curated and quality rules.
+- `AZN` is excluded by curation and the whole-history zero-volume quality rule; `GOOG` is a curated exclusion linked to issuer `GOOGL`.
+- `include_in_universe` is a static master/curation decision. Per-date eligibility is computed by the universe builder using the configured per-date rules. Do not replace this with a whole-history look-ahead feature or silently alter the curation decisions.
+- `data/reference/security_master_curated.csv` is tracked and contains the curated exceptions.
+
+### Pipeline sequence
+
+| Stage | Main output / responsibility | Core implementation |
 |---|---|---|
-| `pip install -e ".[dev]"` | ✅ Passed | Run locally by the project owner |
-| `pytest -m "not needs_data and not slow"` | ✅ 19 passed (baseline commit `93f1abb`) | Close-out patch adds new tests; see below |
-| `python -m nasdaq100.cli status` | ✅ Works | Prints this file |
-| Ruff | 🟡 4 auto-fixable findings were fixed | A clean final run was not captured |
-| `make test` | ⏳ Not run | GNU `make` may be unavailable on Windows. Guide §0.4.2 makes `make` optional; the direct pytest command is the accepted equivalent. |
-| CI (GitHub Actions) | ⏳ Not run | No GitHub remote yet. CI matrix is Python 3.11 and 3.12. |
-| Close-out patch: pytest | 🟡 24 passed (19 baseline + 5 new) in the assistant's sandbox | Run with the real pytest 9.1.1 but with **stand-ins** for pydantic and the parquet engine (their native wheels were unavailable offline). The stand-ins were calibrated: the pristine baseline `93f1abb` also gives 19/19 there. **Must be re-run locally with the real dependencies**: `pytest -m "not needs_data and not slow"`; record the result here. |
-| Close-out patch: Ruff | ⏳ Not run | Ruff was unavailable in the sandbox. A best-effort static check of the E/W/F/I/B/UP families found and fixed one issue (W391 in `test_cli.py`). **Run `ruff check .` locally and record the result.** |
+| S1 | Ingestion, manifest/hashes, calendar, silver quality flags and validation | `src/nasdaq100/data/ingest.py`, `flags.py`, `validate.py`; `src/nasdaq100/utils/calendar.py` |
+| S2 | Security master and per-date eligible universe | `src/nasdaq100/data/security_master.py`, `universe.py` |
+| S3 | Adjusted OHLC and close-to-close log returns | `src/nasdaq100/data/adjust.py` |
+| S4 | Forward-return labels and cross-sectional labels | `src/nasdaq100/labels/forward_returns.py` |
+| S5 | Registered stock and market features, raw/model feature panels and per-date normalisation | `src/nasdaq100/features/registry.py`, `stock_features.py`, `market_features.py`, `normalize.py`, `build.py` |
+| S6 | Temporal folds, split guards, panel loader and leakage checks | `src/nasdaq100/validation/`, `src/nasdaq100/data/loaders.py` |
 
-**S0 close-out patch (2026-10-03). Four narrowly scoped fixes:**
-1. **`--config` layering.** `--config` is now an *override* file layered over `configs/base.yaml` (precedence: base < `--config` < `--override`), as the guide specifies. Previously the CLI passed it as the base config, so `base.yaml` was ignored. New helper `build_config_from_args` in `cli.py`; regression tests in `tests/unit/test_cli.py`.
-2. **Tracked `egg-info`.** `*.egg-info/`, `build/`, `dist/` added to `.gitignore`; `src/nasdaq100.egg-info/` removed from the Git index (files remain on disk).
-3. **`needs_data` auto-skip hook** (guide §II.7). `tests/conftest.py` skips `needs_data` tests when neither `data/raw/archive.zip` nor `data/raw/NASDAQ100_Historical_Data.csv` exists. Tests: `tests/unit/test_conftest_hooks.py`.
-4. **This file** rewritten to match the repository (the previous version was written before the baseline commit and still said "no commit"; it also used wrong milestone labels).
+Rows are generally preserved through the pipeline; warm-up periods and unavailable forward labels are represented by NaNs/flags rather than dropping rows. Use the Master Build Guide and each module's contract for exact schemas.
 
-**Deviations from the guide and open items (none block S1):**
-1. `config.py` repeats every `base.yaml` default inside the pydantic classes (two sources of truth). They match today; a drift-guard test comparing `Config()` defaults to `base.yaml` would be a cheap safeguard.
-2. `new_run_id(stage, name, config_hash)` takes the hash string rather than `cfg` (avoids a circular import; acceptable).
-3. `append_registry` validates columns only (no duplicate `run_id`, `split` or type checks), as the guide specifies.
-4. `paths.py` hard-codes `archive.zip` and the CSV name, so the config keys `data.raw_zip` and `data.raw_csv_name` are currently unused; path helpers take `variant` as an explicit argument (default `"base"`), so callers must pass `cfg.project.variant`.
-5. `write_parquet` sort is not stable (matters only for ties); config does not validate enum-like strings (`fill`, `weighting`, `calibration.method`, `cohort_filter`).
-6. `cli status` prints the whole file; unimplemented commands exit with code 1.
-7. Fixtures are lighter than later stages need: the planted/null panels use `feature_1`/`feature_2` and lack `rank_pct_h20`, `label_exit_idx_h20`, the 24 MVP feature names and market-level features; the toy `AZN` series has `adj_close/close ≠ 1` on its last date. Extend before S6/S8 (not S1).
-8. Environment: Python 3.14 (CI covers 3.11/3.12 only); the venv was created with `--system-site-packages` (global packages can leak in); the project lives under OneDrive. LightGBM/SHAP wheel availability on 3.14 is unverified (matters in S8/S14).
-9. Not present (not required by the S0 spec): `requirements-lock.txt`, `.pre-commit-config.yaml`, `Dockerfile` (S17).
+## 4. Completed stage history: S0–S6
 
-### S1: Data ingestion, validation and quality flags: implemented (awaiting local verification)
+Use this section as the chronological record of what each completed stage introduced and which interfaces, decisions, and limitations later stages must preserve. The Master Project Build Guide remains the full specification; the repository implementation and tests are authoritative for what exists.
+
+**Verification provenance:** the original state file mixed local checklists with assistant-sandbox test tables and stale “run locally” instructions. Therefore, the summaries below preserve implementation facts and selected data observations, but do not reinterpret old sandbox results as local passes. Per-stage historical local test totals for S0–S4 are not reliably reconstructable from that file. S5's former record explicitly says its local lint, real-data build, leakage checks, and locally run S5 tests passed, but it did not record an aggregate test count. All future verification must be recorded from actual local command output.
+
+### 4.1 S0 — Foundations and repository conventions
+
+**Implementation checkpoints:** `93f1abb` (`S0: foundations`) and `86767bb` (`S0: close-out`), both present in the shared Git history.
 
 **Delivered:**
-- `src/nasdaq100/data/ingest.py`: extract CSV from `data/raw/archive.zip` (CSV bytes only, no `extractall`), SHA-256 of zip and CSV, `MANIFEST.json`, frozen-dataset guard (`FrozenDatasetError`), exact-column check (`SchemaError`), explicit dtypes, rename per §II.1, sort by (`ticker`,`date`), bronze + calendar parquet. Helpers `read_manifest`, `data_hash`.
-- `src/nasdaq100/data/flags.py`: `add_flags` (silver = bronze + `n_obs` + 5 `flag_*`), `corp_action_events`. Rows are never removed.
-- `src/nasdaq100/data/validate.py`: 9 hard checks (schema/dtypes, NaN, duplicates, sort order, prices > 0, 3 OHLC checks, internal calendar gaps), soft checks (dimensions vs `data_expectations.yaml`, survivorship indicator, zero-volume, tick noise by year, largest returns, GOOG/GOOGL correlation), `validation_report.json`, `docs/data_quality_report.md` (`SURVIVOR-BIASED` statement), `run_validate`.
-- `src/nasdaq100/utils/calendar.py`: `build_calendar`, `TradingCalendar` (`idx_of`, `date_at`, `offset`, `rebalance_dates`), module-level `rebalance_dates(cfg, calendar)`.
-- CLI: `ingest` and `validate` commands (config is still validated first; errors exit 1).
-- Tests: `tests/unit/test_{calendar,flags,ingest,validate,cli_s1}.py`, `tests/fixtures/s1_prices.py` (clean generator that triggers no flag), `tests/integration/test_s1_real_data.py` (`needs_data`). Three existing tests in `tests/unit/test_cli.py` used `ingest` as the "unimplemented command" example; they now use `build-master`.
+- `src/nasdaq100/` package structure; working `config.py`, `paths.py`, `cli.py`, and `utils/{hashing,io,logging,seeds}.py`.
+- `configs/base.yaml` and `configs/data_expectations.yaml`; package metadata and tooling in `pyproject.toml`, `Makefile`, `.gitignore`, and `.github/workflows/ci.yml`.
+- README survivorship notice; decision-record template under `docs/decisions/`; header-only `experiments/registry.csv`.
+- Test configuration/fixtures including `tests/conftest.py`, `tests/fixtures/toy_data.py`, and unit tests for configuration, paths, utilities, toy data, CLI and `needs_data` behaviour.
 
-**Measured on the real archive (all match guide section I.3 / `data_expectations.yaml`):** 514,075 rows; 100 tickers; 6,571 calendar dates; 2000-01-03 to 2026-02-18; zip SHA-256 `e70ce876...e8d2`; 0 hard-check failures; 0 tickers end early (survivorship); `close < 5` rows 48,646; zero-volume rows 1,594 (AZN 1,459); 27 rows with |close return| > 40%; GOOG/GOOGL correlation 0.9971; `flag_corp_action_suspect` fires on KDP 2018-07-10, BKR 2017-07-05, MDLZ 2012-10-02, TMUS 2013-05-01. Flag totals: tick_noise 48,646; zero_volume 1,594; flat_bar 4,546; corp_action_suspect 19; extreme_move 30. Only soft warning: `zero_volume_share_by_ticker` (AZN), as expected.
+**Conventions introduced:**
+- Configuration precedence is `configs/base.yaml` < `--config` < `--override`. A `--config` file is an overlay, not a replacement for the base config.
+- `needs_data` tests are skipped when the real raw archive/CSV is unavailable; data-independent unit tests should still run.
+- Data/artifact path helpers are variant-aware. Preserve variant namespacing and pass `cfg.project.variant` where required.
+- `experiments/registry.csv` is append-only, but data-build stages do not create an experiment record merely because they built a table.
+- The project reports survivorship bias explicitly; do not make bias-free-universe claims.
 
-**Verification record:**
+**Known S0 caveats still relevant later:**
+- Pydantic defaults repeat values from `base.yaml`, so there are two sources of truth; a drift guard was proposed but not recorded as implemented.
+- `paths.py` hard-codes the raw archive/CSV names even though `data.raw_zip` and `data.raw_csv_name` config keys exist. Do not assume those keys currently control path resolution.
+- `append_registry` validates registry columns but does not enforce duplicate-run/type constraints; `write_parquet` sorting is not guaranteed stable for ties.
+- Enum-like config strings are not fully validated at config load time; some stage builders validate their own accepted values.
+- The `status` CLI prints this project-state file. Commands for stages not yet implemented may still be stubs that exit nonzero.
+- Toy/planted fixtures were initially simpler than later modelling stages require; extend fixtures intentionally when the relevant stage calls for it.
+- Local development uses Windows/Python 3.14, while the recorded CI matrix is Python 3.11 and 3.12. Compatibility of later optional packages such as LightGBM/SHAP on Python 3.14 was not established by S0–S6. The virtual environment was created with `--system-site-packages`, so global packages may be visible.
+- A lock file, pre-commit configuration and Dockerfile were not included in S0; packaging/reproducibility belongs to S17.
 
-| Check | Result | Note |
-|---|---|---|
-| Baseline (S0 close-out tree) in the assistant's sandbox | 24/24 passed | Calibration of the stand-ins below |
-| `pytest -m "not needs_data and not slow"` (sandbox) | 77 passed | 24 baseline + 53 new |
-| `pytest -m needs_data` (sandbox, real archive) | 13 passed | Full tree: 90 passed, 0 failed |
-| `python -m nasdaq100.cli ingest` / `validate` (sandbox, real archive) | Works; re-ingest is idempotent | Isolated copy of the repo layout |
-| Mutation checks | 5/5 caught | Corp-action guard, strict `<` tick threshold, frozen guard, gap check, rebalance anchor |
-| Ruff | Not run | Unavailable offline. AST check for unused imports/variables found nothing. **Run `ruff check .` locally.** |
-| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner) because wheels were unavailable offline; pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+**Test/infrastructure inventory and old verification record:** `tests/unit/`, the `tests/fixtures/toy_data.py` generators, and `tests/conftest.py` are the foundation for subsequent stages. The original S0 log recorded `pip install -e ".[dev]"` as passed locally, 19 baseline tests passed at the initial `93f1abb` baseline, and `python -m nasdaq100.cli status` working. The later S0 close-out table reported 24 passing tests in the assistant sandbox using dependency stand-ins; that is not a local result. A clean final Ruff run after the S0 close-out was not captured in that older record. These facts describe the historical record only; use fresh local regression checks as the current verification.
 
-**Interpretations of the guide (none change a schema):**
-1. `MANIFEST.json` top-level keys are exactly the section II.5 columns and describe the **zip** (`file_name`, `sha256`, `size_bytes`); an extra `csv` block holds the CSV's name, hash and size. `data_hash()` returns the zip hash. If only the CSV exists (no zip), the top-level entry describes the CSV.
-2. Frozen guard compares the CSV hash always and the zip hash when the manifest was written from a zip. Re-ingesting identical data leaves the manifest (and `created_at`) untouched.
-3. `rebalance_dates(cfg, calendar=None)` returns a DataFrame (`date`, `t_idx`) and takes the anchor/stride from `cfg.backtest`; the calendar defaults to `calendar.parquet`.
-4. On a hard-check failure `validate` still writes the (failed) JSON and markdown reports for diagnosis, does **not** write silver, and exits 1.
-5. `run_ingest` / `run_validate` accept optional explicit paths (default: `nasdaq100.paths` helpers) so tests run in temp directories. S0 deviation 4 (config keys `data.raw_zip`, `data.raw_csv_name` unused) is unchanged.
-6. S1 appends **no** `experiments/registry.csv` row (it produces no experiment results). Revisit if a run record for data builds is wanted.
-7. `make data` still lists the S2/S3 commands, which are stubs that exit 1: it runs `ingest` and `validate` correctly and then stops at `build-master`. Run the two S1 commands directly until S2/S3 exist.
+### 4.2 S1 — Data ingestion, validation and quality flags
 
-**Observations for later stages (informational):**
-- Besides the four reference events, `flag_corp_action_suspect` also fires on MSFT 2004-11-15 (special dividend), CCEP 2010-10-04 and 2016-05-31, ASML, KLAC and others, and on ~10 marginal events with a return gap of 0.03-0.04 (AZN x5, COST x3, PCAR x2) that look like large ordinary dividends. They are flags only; S2/S3 decide what to do with them.
-- `Close` and `Adj Close` are both 2-decimal rounded, so `adj_close / close` ratios are noisy at low prices (the reason for the `corp_action_min_prev_close` guard).
-
-### S2: Security master and universe: implemented (awaiting local verification)
+**Implementation commit:** `c251ae3` (`S1: ingestion, validation, flags`).
 
 **Delivered:**
-- `src/nasdaq100/data/security_master.py`: curated-exceptions loader/validator, `build_security_master` (curated defaults + `first_date, last_date, n_obs, cohort, zero_volume_share, median_dollar_volume_last_year, include_in_universe, status_reason`), deterministic CSV writer/loader, `read_silver`, `run_build_master`.
-- `src/nasdaq100/data/universe.py`: `build_universe` (the single place eligibility is decided), `run_build_universe`, `load_universe(cfg)` (honours `project.variant`, applies no filter of its own), `master_fail_by_ticker`.
-- `data/reference/security_master_curated.csv` (tracked; exceptions only): AZN and GOOG excluded; GOOG `issuer_id=GOOGL`; GOOGL `share_class=A`; `stitching_suspect=true` for CCEP, KDP, WBD, LIN, BKR, MDLZ.
-- `docs/survivorship.md` (hand-written, tracked): evidence, what the universe does and does not do, claims policy (section IV.4), `in_index_pit` plug-in point.
-- CLI: `build-master` and `build-universe` (config is validated first; failures exit 1).
-- Tests: `tests/unit/test_{security_master,universe,cli_s2,survivorship_doc}.py`, `tests/leakage/test_universe_time_safety.py` (L2), `tests/integration/test_s2_real_data.py` (`needs_data`), `tests/integration/conftest.py` (session fixture `real_s1`: runs S1 into a temp dir), `tests/fixtures/s2_silver.py`. Five `test_cli.py` references used `build-master` as the "unimplemented command" example; they now use `explain`.
+- `src/nasdaq100/data/ingest.py`: extracts only the CSV bytes from `data/raw/archive.zip` (not a general `extractall`), validates expected columns, assigns explicit dtypes, sorts by `(ticker, date)`, creates bronze data and the trading calendar, and writes `MANIFEST.json` with file hashes. Includes `read_manifest`, `data_hash`, and the frozen-dataset guard (`FrozenDatasetError`); schema failures use `SchemaError`.
+- `src/nasdaq100/data/flags.py`: builds the silver table by adding `n_obs` and five `flag_*` quality columns, and identifies potential corporate-action events. Flags are diagnostics; rows are not removed.
+- `src/nasdaq100/data/validate.py`: hard schema/data checks and soft diagnostics; writes `validation_report.json` and `docs/data_quality_report.md`, including the `SURVIVOR-BIASED` disclosure. A failed hard check produces diagnostic reports, does not write silver, and exits nonzero.
+- `src/nasdaq100/utils/calendar.py`: calendar construction and `TradingCalendar` methods (`idx_of`, `date_at`, `offset`, `rebalance_dates`), plus the configured rebalance-date helper.
+- CLI commands `ingest` and `validate`; relevant tests include `tests/unit/test_{calendar,flags,ingest,validate,cli_s1}.py`, `tests/fixtures/s1_prices.py`, and `tests/integration/test_s1_real_data.py` (`needs_data`).
 
-**Measured on the real archive (assistant's sandbox; all within the guide's tolerances):** security master 100 tickers (55 `orig2000`, 45 `later`), 98 included, excluded AZN (curated + quality rule: 34.1% zero-volume days) and GOOG (curated); empty curated file still excludes exactly AZN. Universe 514,075 rows, 436,753 eligible (85.0%); `fail_*` rows: master 9,688, seasoning 25,200, min_close 48,646, zero_volume 1,594, liquidity 14,715. Median eligible names per date by year: 2001 = 42, 2005 = 48, 2008 = 53, 2010 = 59, 2015 = 75, 2019 = 83, 2022 = 94, 2025 = 98. GOOG never eligible; GOOGL first eligible 2005-08-18 (its 253rd observation). Variant `orig55` (`cohort_filter=original55`): 317,109 eligible rows, base untouched.
+**Frozen archive facts recorded by the earlier real-archive analysis (historical measurement, not a local S1 test claim):** 514,075 rows, 100 tickers, 6,571 calendar dates, dates 2000-01-03 through 2026-02-18; ZIP SHA-256 starts `e70ce876` and ends `e8d2` (full digest belongs in the manifest). That analysis recorded zero hard-check failures, zero tickers ending early, 48,646 rows with `close < 5`, 1,594 zero-volume rows (1,459 AZN), 27 rows with absolute close returns above 40%, and GOOG/GOOGL correlation of 0.9971. Historical flag totals were 48,646 tick-noise, 1,594 zero-volume, 4,546 flat-bar, 19 corporate-action-suspect and 30 extreme-move rows. The zero-volume-share warning for AZN was expected; it was a soft warning.
 
-**Verification record:**
+**Interpretations and constraints:**
+- The top-level manifest fields describe the source file (usually the ZIP); a nested CSV block records the extracted CSV's hash/size. `data_hash()` returns the ZIP hash when the manifest was created from a ZIP.
+- Frozen-data validation compares the CSV hash and, for ZIP-based manifests, the ZIP hash. Re-ingesting identical data should not rewrite the manifest timestamp unnecessarily.
+- `rebalance_dates(cfg, calendar)` returns `date` and `t_idx`, using configured backtest anchor/stride. The calendar defaults to the processed calendar file.
+- S1 does not filter/remove rows and does not write an experiment-registry row. `make data` originally stopped at later commands until those stages were implemented.
+- `Close` and `Adj Close` are rounded vendor values, so `adj_close / close` is noisy at low prices. Keep the minimum-close eligibility rule and corporate-action flags as distinct concerns; a flag is not itself a reason to silently drop a row.
+- Corporate-action-suspect events include documented reference events (KDP, BKR, MDLZ, TMUS) and other possible events; they are flags for downstream interpretation, not automatic corrections.
 
-| Check | Result | Note |
-|---|---|---|
-| `pytest -m "not needs_data and not slow"` (sandbox) | 119 passed | 77 (S0+S1) + 42 new |
-| `pytest -m needs_data` (sandbox, real archive) | 30 passed | 13 (S1) + 17 new; full tree 149 passed |
-| `pytest -m leakage` (sandbox) | 4 passed | L2 universe time-safety |
-| CLI `ingest`, `validate`, `build-master`, `build-universe` (sandbox, real archive) | Work; master and universe rebuilds are deterministic | Isolated copy of the repo layout; variant run does not overwrite base |
-| Mutation checks (sandbox) | 9/9 caught | Seasoning off-by-one, `min_periods`, NaN-liquidity handling, strict `<` min close, stitched drop, `eligible` formula, quality rule (two ways), look-ahead via whole-history `n_obs` |
-| Ruff | Not run | Unavailable offline; AST check for unused imports/variables found nothing. **Run `ruff check .` locally.** |
-| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+### 4.3 S2 — Security master and per-date universe eligibility
 
-**Interpretations of the guide (none change a schema):**
-1. `universe.cohort_filter` accepts `original55` / `later` (section II.4) and maps them to the security-master cohorts `orig2000` / `later` (section II.5): the same 55 tickers (first date 2000-01-03). Any other value raises `UniverseError` (config still does not validate enum strings; S0 deviation 5 unchanged).
-2. `median_dollar_volume_last_year` is the median of `close * volume` over each ticker's last 252 observations (not calendar 2025). Measured: AZN about $0.20M; next-lowest GFS about $84M (the guide quotes about $0.19M and about $75M for 2025).
-3. **`include_in_universe` is static and whole-history by specification** (curated exclusions plus the zero-volume quality rule on full-history `zero_volume_share`). It is a curation decision, not a per-date rule; only AZN is affected by the quality rule today. The per-date rules (seasoning, min close, zero volume, liquidity) are time-safe (L2). The L2 test holds the master fixed. Disclosed in `docs/survivorship.md`.
-4. `security_master.csv` does not depend on `project.variant`, but it embeds `flags.max_zero_volume_share_ticker`: re-run `build-master` after changing that key.
-5. `universe.parquet` has exactly the section II.5 columns (no `t_idx` or `n_obs`); later stages join the calendar or silver. The builder takes `n_obs` from silver and raises if it is inconsistent with row order.
-6. GOOG `share_class` is `C` in the curated file (the guide only specifies GOOGL = `A`; GOOG is Alphabet's class C).
-7. `load_universe` has no locked-test guard: decision D19 belongs to S6/S16, which must wrap it. No `experiments/registry.csv` row is written (no experiment results), consistent with S1.
-8. `data/reference/security_master.csv` is not git-ignored (the guide keeps `data/reference` tracked); it is small and byte-for-byte deterministic, so committing it is reasonable.
-9. `make data` still lists `build-adjusted` (S3 stub, exits 1): it runs the four S1/S2 commands correctly and then stops. Run the S1/S2 commands directly until S3 exists.
+**Implementation commit:** `102b7c8` (`S2: security master and universe`).
 
-**Observations for later stages (informational):**
-- The first 252 trading dates have zero eligible names by construction (seasoning); the first eligible decision date is 2001-01-02 (`t_idx` 252), as in the guide.
-- Ineligible rows are kept in `universe.parquet` with their `fail_*` reasons; S1 flags remain only in silver.
+**Delivered:**
+- `src/nasdaq100/data/security_master.py`: loads/validates curated exceptions and builds the security master with first/last dates, observation counts, cohort, zero-volume share, trailing dollar-volume statistic, include decision and status reason. Includes deterministic CSV writer/reader and silver-table reader.
+- `src/nasdaq100/data/universe.py`: builds per-row eligibility; `load_universe(cfg)` respects the configured variant and does not silently apply an additional filter; `master_fail_by_ticker` supports diagnostics.
+- `data/reference/security_master_curated.csv` is tracked. Current exceptions exclude AZN and GOOG; GOOG is linked to issuer `GOOGL`, GOOGL is class A, and stitching-suspect indicators are recorded for CCEP, KDP, WBD, LIN, BKR and MDLZ.
+- `docs/survivorship.md` documents the dataset limitation, what eligibility does/does not mean, allowed research claims and the `in_index_pit` plug-in point.
+- CLI commands `build-master` and `build-universe`; relevant tests include `tests/unit/test_{security_master,universe,cli_s2,survivorship_doc}.py`, `tests/leakage/test_universe_time_safety.py` (L2), `tests/fixtures/s2_silver.py`, and `tests/integration/test_s2_real_data.py` (`needs_data`).
 
----
+**Counts recorded by the earlier real-archive analysis (historical context):** 100 tickers (55 `orig2000`, 45 `later`), 98 included. AZN is excluded by curation and the whole-history zero-volume quality rule; GOOG is a curated exclusion. The universe contains 514,075 rows, with 436,753 eligible (about 85%). Historical fail-reason row counts were master 9,688, seasoning 25,200, minimum-close 48,646, zero-volume 1,594 and liquidity 14,715. Under `cohort_filter=original55` (security-master cohort `orig2000`), the earlier run counted 317,109 eligible rows; this variant did not overwrite base outputs.
 
-## Exact next step
+**Interpretations and constraints:**
+- `cohort_filter` accepts `original55` and `later`, mapping to `orig2000` and `later`; invalid values raise `UniverseError` in the builder.
+- `median_dollar_volume_last_year` is calculated over each ticker's last 252 observations, not by using a calendar-year slice.
+- `include_in_universe` is a static security-master/curation decision and its zero-volume quality criterion uses full-history ticker data. This is deliberately documented as a limitation, not a point-in-time membership series. Per-date eligibility rules (seasoning, min close, zero volume, liquidity) are time-safe and covered by L2 tests.
+- The security master is not variant-specific, but its result depends on `flags.max_zero_volume_share_ticker`; rebuild it after changing that setting. Universe outputs are variant-specific.
+- Universe rows that fail eligibility stay present with `eligible=False` and `fail_*` reasons. S1 quality flags stay in silver rather than being copied into the universe schema.
+- The current data do not provide a full historical point-in-time Nasdaq-100 membership history. The project must continue to disclose survivorship bias and must not overstate the universe as a fully historical membership reconstruction.
 
-1. Confirm the S6 implementation and verification results, then push the S6 commit to GitHub. Record the resulting commit hash and push status in `PROJECT_STATE.md`.
-2. Create the S7 handoff ZIP from the committed tree, excluding `.git` and `.venv`.
-3. Start the **S7 Predictive evaluation library and baseline models** stage with the current `MASTER_PROJECT_BUILD_GUIDE.md`, `PROJECT_STATE.md` and the handoff ZIP. S7 and later must read features and labels only through `load_panel` and the S6 folds.
-4. S7 must preserve S0-S6 and implement **S7 only**.
+### 4.4 S3 — Adjusted prices and close-to-close returns
 
-## File Quick Reference
+**Implementation commit:** `bbde223` (`S3: adjusted series`).
 
-| File | Purpose |
+**Delivered:** `src/nasdaq100/data/adjust.py` provides `build_adjusted`, `run_build_adjusted`, `load_adjusted`, `AdjustError` and `ADJUSTED_COLUMNS`. It writes `data/processed/{variant}/adjusted_prices.parquet`; tests include `tests/unit/test_{adjust,cli_s3}.py`, `tests/leakage/test_adjusted_scale_invariance.py` (L3), and `tests/integration/test_s3_real_data.py` (`needs_data`). CLI: `build-adjusted`.
+
+**Output schema and calculations:** `ticker, date, t_idx, adj_factor, adj_open, adj_high, adj_low, adj_close, volume, dollar_volume, logret_cc`. `adj_factor = adj_close / close`; adjusted open/high/low use the factor and vendor `adj_close` is retained as supplied; `dollar_volume = close * volume`; `logret_cc = ln(adj_close_t / adj_close_{t-1})` per ticker, NaN on each ticker's first row. `t_idx` is supplied from the calendar and must be consecutive within each ticker. S3 preserves the row set from silver; quality flags are not carried to this table.
+
+**Numerical and pipeline decisions:**
+- The builder enforces `adj_low <= adj_open, adj_close <= adj_high`. Since vendor `adj_close` can differ from `close * adj_factor` by a floating-point unit, adjusted high/low use max/min safeguards against tiny ordering violations. Values remain equal to the factor product within the documented numerical tolerance.
+- Adjusted levels should not be interpreted as absolute comparable prices. S4 uses ratios of adjusted open; S5 uses adjusted-close ratios and `logret_cc`.
+- The builder requires S1 silver and calendar only; it does not require the S2 universe and can run before or after `build-universe`. Output path still follows the variant.
+- Invalid input (missing columns, NaN, non-positive values, duplicate keys, dates outside the calendar or non-consecutive `t_idx`) raises `AdjustError`; the CLI fails rather than silently repairing it.
+- A non-unit `adj_factor` on a ticker's last date is a warning, not an automatic hard failure.
+
+**Real-archive observations recorded by the earlier analysis (historical context):** output had 514,075 rows with keys matching the universe; exactly 100 first-row `logret_cc` NaNs were observed and none elsewhere; final-date `adj_factor` was 1.0 for every ticker; historical `logret_cc` extrema were approximately -0.833 to +0.562. Low-price rounding can make early-history close returns noisy; S2's `min_close` eligibility rule helps keep such rows out of the modelling panel.
+
+### 4.5 S4 — Forward-return and cross-sectional labels
+
+**Implementation commit:** `9dbc5ec` (`S4: label generation`).
+
+**Delivered:** `src/nasdaq100/labels/forward_returns.py` provides `build_labels`, `run_build_labels`, `load_labels`, `label_columns` and `LabelError`; CLI: `build-labels`. Tests include `tests/unit/test_{forward_returns,cli_s4,data_dictionary_doc}.py`, `tests/leakage/test_label_poisoned_future.py` (L1), `tests/integration/test_s4_real_data.py` (`needs_data`), and `tests/fixtures/s4_labels.py`. The data dictionary documents the label schema.
+
+**Label contract:** for each horizon `h` (default `[20]`), columns include `ret_fwd_h{h}`, `excess_h{h}`, `y_reg_h{h}`, `y_cls_h{h}`, `rank_pct_h{h}`, `label_exit_idx_h{h}` and `has_label_h{h}`. The forward return is `ln(adj_open[t+1+h]) - ln(adj_open[t+1])`; `label_exit_idx_h = t_idx + 1 + h`. A forward label exists only when the exit date is on the calendar and both required prices exist. Cross-sectional labels are computed per date over `eligible & has_label` rows: `excess` subtracts that date's eligible labelled mean, `y_reg` clips excess to date-wise quantiles, `y_cls = 1[excess > 0]`, and `rank_pct` is the average-rank percentile of `ret_fwd` (1.0 is the highest rank). Cross-sectional labels are NaN when fewer than 20 eligible labelled names exist. Rows are retained; label availability is represented through `has_label` and NaNs.
+
+**Important constraints for S6 and later:**
+- `label_exit_idx_h` is the temporal dependency boundary for purge/embargo. The label for decision date `t` uses adjusted opens at `t+1` and `t+1+h`; it does not use close-to-close labels.
+- `ret_fwd` may be present on ineligible rows for diagnostics, but cross-sectional targets must only be defined for eligible, labelled rows. Do not treat a missing/unavailable label as a negative class.
+- `labels.parquet` does not include `t_idx`, `eligible` or S1 quality flags; join through the calendar/universe when needed.
+- S4 itself does not apply the S6 locked-test guard or dev label mask. S6 must wrap the lower-level label reader for modelling/evaluation use.
+- No experiment-registry row is written because label generation is not an experiment result.
+
+**Real-archive observations recorded by the earlier analysis (historical context):** the labels table had 514,075 rows; for `h=20`, 511,975 rows had forward returns (the trailing 21 rows per ticker lacked an exit price); 434,695 rows had cross-sectional labels; the first cross-sectional-label date was 2001-01-02; the recorded `y_cls_h20` mean was 0.5009, `excess_h20` standard deviation about 0.0853 and per-date excess means were numerically zero. The clipped regression target differed from excess on 12,596 rows in that analysis. These are historical real-archive observations, not proof of a particular current local command run.
+
+### 4.6 S5 — Feature engineering and M1 labelled feature panel
+
+**Implementation commit / milestone:** `7e0d5ab` (`S5: feature engineering`), tagged M1. Full baseline hash: `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
+
+**Delivered:**
+- `src/nasdaq100/features/registry.py`: registry for 24 MVP features, families, required-feature checks and registry validation.
+- `src/nasdaq100/features/stock_features.py`: 18 trailing stock-level features, including causal two-pass beta.
+- `src/nasdaq100/features/market_features.py`: six market-level features and point-in-time eligible-name market aggregates.
+- `src/nasdaq100/features/normalize.py`: eligible-only, per-date winsorisation and rank-Gauss transformation, average ranks for ties.
+- `src/nasdaq100/features/build.py`: orchestrates the feature build and writes raw/model feature panels and market series without dropping rows.
+- CLI: `build-features`; feature definitions and columns documented in `docs/data_dictionary.md`.
+- Tests cover registry, stock and market features, normalisation, orchestration, CLI/docs, real-data integration and future-poisoning/leakage cases.
+
+**Contracts and observations:**
+- All feature panels preserve the full row set; missing warm-up values remain NaN rather than being filled from future observations or causing rows to be dropped.
+- Stock features use trailing/causal inputs. Market features use the names eligible at `t-1`, avoiding contemporaneous eligibility look-ahead, and date-level market values are copied to rows for that date.
+- Normalisation is per date and only over eligible, non-NaN stock feature values. Average ranks handle ties.
+- `features_model` holds per-date rank-Gauss-transformed model features; `features_raw` is a distinct unnormalised/raw feature panel. Do not interchange them casually or apply the same normalisation twice.
+- `beta_126` and rolling market features have natural warm-up NaNs. The first modelling stage that needs finite input values must state its feature/row eligibility policy explicitly.
+- Market-level series may be NaN before the first eligible market composition exists; `mkt_index` is based on cumulative `mkt_logret` and remains NaN while that return is unavailable. The implemented column is `n_eligible` (some guide wording calls it `n_eligible_t`).
+- Standard deviations use sample (`ddof=1`) behaviour. `beta_126` needs a full return window and non-zero market variance. Invalid log arguments result in NaN rather than infinity.
+- S5 includes dedicated leakage tests, but the general `check-leakage` CLI and locked-test framework belong to S6. S5 does not open/protect the locked test set, does not alter the survivorship limitation, and does not write an experiment registry row.
+
+**Verification provenance:** the older state explicitly recorded that locally run S5 tests passed, a real-data feature build passed, the leakage tests passed, `ruff check .` passed and `git diff --check` passed. It did not preserve exact command totals. Keep those qualitative results, but do not invent an aggregate S5 test count.
+
+**M1 meaning:** S5 established the clean labelled feature panel needed as the starting point for predictive evaluation. S6 adds temporal validation and guarded panel access on top of this M1 baseline.
+
+
+### 4.7 S6 — Validation folds, locked-test guard, and leakage tooling
+
+**Baseline:** M1, S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
+
+**Implementation commit:** `ac02dbb` — `S6: validation framework and locked-test guard` (pushed to `origin/master`). The documentation checkpoint prepared for this revision is `dd68e32` — `docs: record S6 verification status`. The exact head advances when this revised state file is committed; use Git to confirm the newest hash.
+
+**Delivered:**
+- `src/nasdaq100/validation/folds.py`: `Fold`, `make_fold`, `make_dev_folds`, `make_tuning_folds`, `make_locked_folds`, `build_fold_plan`, `write_fold_plan`, `purge_gap`, and `year_bounds`.
+- `src/nasdaq100/validation/guards.py`: `LockedTestError`, `assert_not_locked`, `open_locked_test`, `require_token`, `is_valid_token`, access tokens, protocol logging, and boundary helpers.
+- `src/nasdaq100/validation/leakage.py`: `assert_folds_valid`, `poison_future`, the `null_panel_test` scaffold for later model validation, `SpyEstimator`, and `run_leakage_suite`.
+- `src/nasdaq100/data/loaders.py`: `build_panel` and the supported `load_panel(cfg, features, split, labels=True, ...)` API for assembling split-safe feature/label panels.
+- `src/nasdaq100/cli.py`: `check-leakage`, which writes a fold plan and runs `pytest -m leakage` from the repository root.
+- Tests in `tests/unit/test_{folds,guards,loaders,leakage_tools,cli_s6}.py`, `tests/leakage/test_{fold_validity,dev_label_masking,locked_guard}.py`, and `tests/integration/test_s6_real_data.py`; fixtures in `tests/fixtures/s6_validation.py`. The `docs/data_dictionary.md` documents the panel and fold plan.
+
+**Temporal boundaries verified against the project's real calendar:**
+
+| Boundary | Current reference value |
 |---|---|
-| `MASTER_PROJECT_BUILD_GUIDE.md` | Single source of truth for all stages |
-| `configs/base.yaml` | All default parameters; `--config` override files layer on top |
-| `src/nasdaq100/config.py` | Config loader and `config_hash` |
-| `src/nasdaq100/paths.py` | All artifact path helpers (variant-namespaced) |
-| `src/nasdaq100/cli.py` | CLI entry point (`status`, `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels`, `build-features`, `check-leakage` work; other commands are stubs until their stage) |
-| `src/nasdaq100/utils/io.py` | Parquet I/O, registry append, run IDs |
-| `src/nasdaq100/utils/calendar.py` | Global trading calendar, `t_idx` arithmetic, rebalance dates |
-| `src/nasdaq100/data/ingest.py` | Zip -> bronze, calendar, manifest, frozen-dataset guard |
-| `src/nasdaq100/data/flags.py` | Silver flags (`n_obs`, `flag_*`) |
-| `src/nasdaq100/data/validate.py` | Hard/soft checks, validation report, data-quality report |
-| `src/nasdaq100/data/security_master.py` | Curated exceptions + derived security master (`data/reference/security_master.csv`) |
-| `src/nasdaq100/data/universe.py` | Eligibility builder (single source of truth) and `load_universe(cfg)` |
-| `src/nasdaq100/data/adjust.py` | Adjusted prices and `logret_cc` (S3) and `load_adjusted(cfg)` |
-| `src/nasdaq100/validation/folds.py` | `Fold`, `make_fold`, `make_dev_folds`, `make_tuning_folds`, `make_locked_folds` (token), `build_fold_plan`, `write_fold_plan` (S6) |
-| `src/nasdaq100/validation/guards.py` | `LockedTestError`, `assert_not_locked`, `open_locked_test` (S16 only), tokens, boundary indices (S6) |
-| `src/nasdaq100/validation/leakage.py` | `assert_folds_valid`, `poison_future`, `null_panel_test` (skeleton), `SpyEstimator`, `run_leakage_suite` (S6) |
-| `src/nasdaq100/data/loaders.py` | `load_panel(cfg, features, split, labels=True)`: the only supported way to read features and labels (S6) |
-| `src/nasdaq100/labels/forward_returns.py` | Forward-return labels (S4), `build_labels`, `run_build_labels`, `load_labels(cfg)` |
-| `data/reference/security_master_curated.csv` | Hand-curated exceptions (AZN, GOOG, stitching suspects); tracked |
-| `docs/data_dictionary.md` | Column-level documentation of processed tables (labels, features, the `load_panel` panel, `fold_plan.json`) |
-| `docs/survivorship.md` | Survivorship evidence, allowed claims, point-in-time plug-in point |
-| `tests/fixtures/toy_data.py` | Synthetic price and panel generators |
-| `tests/fixtures/s1_prices.py` | Clean synthetic raw prices for S1 tests (triggers no flag) |
-| `tests/fixtures/s2_silver.py` | Liquid synthetic silver tables, curated frames and configs for S2 tests |
-| `tests/fixtures/s6_validation.py` | Holiday-aware synthetic calendars, configs, protocol/token helpers and panel tables for S6 tests |
-| `tests/fixtures/s4_labels.py` | Synthetic adjusted-price and universe tables (full S3 / S2 schemas) for S4 tests |
-| `experiments/registry.csv` | Append-only experiment log (header only so far) |
+| Locked-test start | `t_idx = 5031`, date `2020-01-02` |
+| Last development decision date | `t_idx = 5030`, date `2019-12-31` |
+| Last development decision index with an available 20-trading-day label | `t_idx = 5009`, date `2019-11-29` |
+| Tuning cap | `t_idx = 1988`, date `2007-11-29` |
+| First training index under current configuration | `252` |
+| Current configured purge/embargo gap | `26` trading-calendar indices |
 
-### S3: Adjusted price series and returns: implemented (awaiting local verification)
+- `make_dev_folds` creates 12 development folds for test years 2008–2019.
+- `make_tuning_folds` creates three folds for 2005–2007 without a calibration block; the final tuning fold is capped at `t_idx = 1988`.
+- The locked range spans 2020–2026, represented as seven locked folds. These folds are not listed in the ordinary development/tuning fold-plan output.
+- The locally inspected `dev_2008` plan showed `train_end_idx = 1983`, `gap = 26`, 241 sampled core dates, and 101 sampled calibration dates with the current stride. Treat these values as regression references for the present configuration, not constants for generic fold logic.
 
-**Delivered:**
-- `src/nasdaq100/data/adjust.py`: `build_adjusted(silver, calendar)` (pure), `run_build_adjusted(cfg, ...)` (reads silver and `calendar.parquet`, writes `data/processed/{variant}/adjusted_prices.parquet`), `load_adjusted(cfg)` (the only supported reader for later stages), `AdjustError`, `ADJUSTED_COLUMNS`. Columns exactly as section II.5: `ticker, date, t_idx, adj_factor, adj_open, adj_high, adj_low, adj_close, volume, dollar_volume, logret_cc`; flags are not carried.
-- Specification: `adj_factor = adj_close / close`; `adj_open/high/low = field * adj_factor`; `adj_close` carried unchanged; `dollar_volume = close * volume`; `logret_cc = ln(adj_close_t / adj_close_{t-1})` per ticker (NaN on each ticker's first row); `t_idx` from the calendar, asserted consecutive within each ticker. Rows are never dropped (row set == silver).
-- CLI: `build-adjusted` (config is validated first; failures exit 1).
-- Tests: `tests/unit/test_{adjust,cli_s3}.py`, `tests/leakage/test_adjusted_scale_invariance.py` (L3, S3 part: scale invariance plus causality of `logret_cc`), `tests/integration/test_s3_real_data.py` (`needs_data`).
+**Loader and leakage contracts:**
+- Fold boundaries are defined on calendar `t_idx`. Fold builders use the configured calendar, horizon, gap, train stride, calibration settings, and window settings; do not replace this with row-count splits.
+- S7 and later modelling/evaluation code must read features and labels through `load_panel` and use the S6 folds. The lower-level S4/S5 readers still exist and are not themselves guarded; do not use them directly in new modelling/evaluation code.
+- `split="dev"` and `split="tuning"` enforce their temporal boundaries. In dev mode, true target fields (`ret_fwd`, `excess`, `y_reg`, `y_cls`, `rank_pct`) are masked beyond `t_idx = 5009`, and `has_label` is false there. `label_exit_idx_h20` remains an integer dependency index and is not price information.
+- `split="locked"` requires a valid token. `open_locked_test` checks the frozen-data configuration and records the opening event in the protocol. **Do not access/open locked-test data during S7–S15.** The deliberate open procedure belongs to S16.
+- Evaluate only rows with valid labels (`has_label`); predictions may exist for eligible decision rows whose future labels are unavailable/masked. Unlabelled rows are not negative labels and are not valid evaluation observations.
+- `null_panel_test` is a scaffold for S8: its intended pipeline result includes `ic_by_date` and may include `auc`. S8 must implement the guide's full null-panel acceptance criteria rather than assuming the scaffold alone proves validity.
 
-**Measured on the real archive (assistant's sandbox):** 514,075 rows, 100 tickers, row keys identical to `universe.parquet`; 100 NaN `logret_cc` (one per ticker, first rows only), none elsewhere; `adj_factor` is exactly 1.0 on every ticker's last date (minimum factor 0.1063); `logret_cc` range -0.833 to +0.562. Known events: KDP 2018-07-10 +0.1088, AAPL 2000-09-29 -0.7185; special-dividend days are small in adjusted terms: BKR 2017-07-05 -0.0759, MDLZ 2012-10-02 -0.0123 (raw close returns are below -0.3), TMUS 2013-05-01 -0.1717.
+**Local verification on the Windows `.venv` (Python 3.14), against the real project archive:**
 
-**Verification record:**
+| Command/check | Observed result |
+|---|---|
+| `python -m pytest -m "not needs_data and not slow"` | **411 passed, 62 deselected** |
+| `python -m pytest -m leakage` | **169 passed, 304 deselected** |
+| `python -m pytest -m needs_data` | **62 passed, 411 deselected** |
+| `python -m nasdaq100.cli check-leakage` | Passed; fold plan was generated and the CLI leakage-test step returned successfully. |
+| `Test-Path .\artifacts\base\fold_plan.json` | `True`; the expected variant-namespaced file existed. |
+| `ruff check .` | Passed. |
+| `git diff --check` | Passed. |
+| `git apply -R --check ..\S6-validation-framework.patch` | Passed; the patch could be reversed cleanly as a check. The patch was not reversed. |
 
-| Check | Result | Note |
-|---|---|---|
-| Baseline (S2 tree) in the assistant's sandbox | 119/119 passed (not needs_data, not slow) | Calibration of the stand-ins below |
-| `pytest -m "not needs_data and not slow"` (sandbox) | 141 passed | 119 (S0-S2) + 22 new |
-| `pytest -m needs_data` (sandbox, real archive) | 38 passed | 30 (S1, S2) + 8 new; full tree 179 passed |
-| `pytest -m leakage` (sandbox) | 8 passed | 4 (L2) + 4 new (L3, S3 part) |
-| CLI `ingest`, `validate`, `build-master`, `build-adjusted`, `build-universe` (sandbox, real archive) | Work | Isolated copy of the repo layout |
-| Mutation checks (sandbox) | 8/8 caught | Inverted factor, close-based returns, dollar volume on adjusted close, gap check, cross-ticker shift, recomputed `adj_close`, missing ordering widening, `t_idx` off by one |
-| Ruff | Not run | Unavailable offline; AST check for unused imports and a line-length/whitespace check found nothing. **Run `ruff check .` locally.** |
-| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+**Counting note:** These marker queries can select overlapping tests. Do not add their counts and present the sum as a unique total. A fully unfiltered suite run and the `slow` tests are not recorded as run for S6.
 
-**Interpretations of the guide (none change a schema):**
-1. `adj_low <= adj_open, adj_close <= adj_high` is made exact. `adj_close` is the vendor value, which can differ from `close * adj_factor` by one ulp; where the bar's high (low) equals the close, the plain product broke the ordering at the 1e-16 level on 455 rows (227 + 228). `adj_high` is therefore the maximum and `adj_low` the minimum of the product and the adjusted open/close. Values still equal `field * adj_factor` to a relative 1e-12.
-2. The table does not depend on any config key, but is written per variant (`adjusted_prices_path(cfg.project.variant)`) so variant pipelines (S2-S8-S11 min-close reruns) find all inputs in one directory; run `build-adjusted` with the same `--override project.variant=...`.
-3. `build-adjusted` needs only silver and the calendar (S1). It does not read the universe or the security master, so it can run before or after `build-universe`.
-4. Invalid input (missing columns, NaN, non-positive prices, duplicate keys, dates off the calendar, a non-consecutive `t_idx`) raises `AdjustError`; the CLI exits 1. S1 already guarantees these cannot happen on the frozen dataset.
-5. A ticker whose `adj_factor` is not 1.0 on its last date is logged as a warning, not an error (none on the real data; the S0 toy fixture has one).
-6. No `experiments/registry.csv` row is written (no experiment results), consistent with S1 and S2.
-7. `make data` now runs every command it lists (`ingest`, `validate`, `build-master`, `build-adjusted`, `build-universe`); `build-labels` and later are still stubs.
+**Known S6 deviations and limitations:**
+1. **Fold-plan path mismatch:** the CLI uses `paths.fold_plan_path(variant)`, so the base-variant output is `artifacts/base/fold_plan.json`. The guide and `.gitignore` refer to `artifacts/fold_plan.json`. This discrepancy is known and documented; do not silently claim the paths match or change this convention incidentally during S7.
+2. **Process-local tokens:** the locked-test token registry is process-local. It is a deliberate-access guard with protocol logging, not a cryptographic barrier against a determined user.
+3. **Structural allow-list:** the current structural tests restrict use of `open_locked_test` to `src/nasdaq100/validation/guards.py`. S16 must intentionally extend the allow-list for its approved locked-test command; S7–S15 must not.
+4. **Unchanged lower-level readers:** S6 did not rewrite `load_labels`, `load_features_model`, `load_features_raw`, or `load_universe` into guarded APIs. `load_panel` is the supported modelling/evaluation entry point.
+5. **CLI scope:** `check-leakage` runs `python -m pytest -m leakage -q` in a subprocess from the repository root. Its successful local run is recorded above; the old sandbox log did not independently verify the pytest subprocess half.
+6. **Warm-up features:** `beta_126` and rolling market features have legitimate warm-up NaNs. S7/S8 must explicitly follow the guide's policy for finite model inputs and evaluation samples; do not silently fill them with future-informed data.
 
-**Observations for later stages (informational):**
-- The adjusted *level* is meaningless; S4 labels use ratios of `adj_open`, and S5 features use ratios of `adj_close` and `logret_cc` only (guide pitfalls).
-- Low-price rounding makes `logret_cc` noisy early in a ticker's history (AAPL 2000-09-29 is the extreme case); S2's `min_close` eligibility rule is what keeps such rows out of the modelling panel.
+**Observations for later stages:**
+- Development predictions may be generated on eligible decision rows in each test year, including December 2019 rows whose forward labels are masked. Evaluation uses only valid labels. Development evaluation/backtest results must not treat decisions after `t_idx = 5009` as having observed 20-trading-day outcomes.
+- Fold training blocks define decision dates; the later trainer selects `eligible & has_label` observations within those blocks. `Fold.base_rate` is populated at fit time in S8.
+- S6 added only the `check-leakage` CLI implementation and panel/fold documentation to already-existing areas. The recorded S6 change did not intentionally change S0–S5 data schemas or pipeline behavior.
 
-### S4: Label generation: implemented (awaiting local verification)
+---
 
-**Delivered:**
-- `src/nasdaq100/labels/forward_returns.py`: `build_labels(adjusted, universe, cfg.labels, calendar, *, min_names=20)` (pure), `run_build_labels(cfg, ...)` (reads `adjusted_prices.parquet`, `universe.parquet`, `calendar.parquet`; writes `data/processed/{variant}/labels.parquet`), `load_labels(cfg)` (the only supported reader for later stages), `label_columns(horizons)`, `LabelError`.
-- Per horizon `h` in `labels.horizons` (default `[20]`), columns exactly as section II.5, after `ticker, date`: `ret_fwd_h{h}, excess_h{h}, y_reg_h{h}, y_cls_h{h}, rank_pct_h{h}, label_exit_idx_h{h}, has_label_h{h}`. `ret_fwd = ln(adj_open[t+1+h]) - ln(adj_open[t+1])` (row shifts after asserting consecutive `t_idx`); `label_exit_idx = t_idx + 1 + h`; `has_label` = exit on the calendar and both prices exist. Cross-sectional columns only over `eligible & has_label` rows, per date: `excess = ret_fwd - mean`, `y_reg` = `excess` clipped at the per-date `labels.winsor_pct` quantiles (raw units, not standardised), `y_cls = 1[excess > 0]`, `rank_pct` = per-date average-rank percentile of `ret_fwd` (1.0 = best). Dates with fewer than 20 eligible labelled names get NaN cross-sectional labels. Rows are never dropped.
-- CLI: `build-labels` (config is validated first; failures exit 1).
-- Docs: `docs/data_dictionary.md` (new; labels documented, later stages append).
-- Tests: `tests/unit/test_{forward_returns,cli_s4,data_dictionary_doc}.py`, `tests/leakage/test_label_poisoned_future.py` (L1), `tests/integration/test_s4_real_data.py` (`needs_data`), `tests/fixtures/s4_labels.py`.
+## 5. Implementation contracts and known deviations
 
-**Measured on the real archive (assistant's sandbox; matches section III S4):** 514,075 rows (keys identical to `universe.parquet`); last decision date with a label (h=20) 2026-01-16 (`t_idx` 6549); 511,975 rows with `ret_fwd_h20` (exactly the last 21 rows of each of the 100 tickers lack one); 434,695 rows with cross-sectional labels (= eligible and labelled); first date with cross-sectional labels 2001-01-02; 40 to 98 eligible labelled names per date (median 67), so the 20-name minimum never triggers; `y_cls_h20` mean 0.5009; `excess_h20` std 0.0853, mean 0 per date (max |mean| 5e-17); 12,596 `y_reg_h20` values differ from `excess_h20` (clipped); KDP labels across the 2018-07-10 special dividend are smooth (raw open ratio < -1.0, label about +0.19 at `t` = ex-date minus 5).
+### Rules for all work from S7 onward
 
-**Verification record:**
+- `MASTER_PROJECT_BUILD_GUIDE.md` is the specification for stage scope, design, schemas, and acceptance criteria; this file is a status/handoff record, not a substitute for the guide.
+- Implement **only the requested stage** in a stage patch. Do not implement parts of later stages early or change earlier-stage behavior unless the guide explicitly requires it and the change is documented.
+- S7 and later must read feature/label panels via `src/nasdaq100/data/loaders.py::load_panel` and use the S6 fold definitions. Do not directly use the unguarded lower-level feature/label readers in new modelling/evaluation code.
+- Do not access locked-test data during S7. Do not call or import `open_locked_test` from S7 or other pre-S16 code.
+- Evaluate only rows with valid labels (`has_label`); predictions may be generated for eligible decision rows even when their future labels are masked. Do not mistake unlabeled rows for negative labels or valid evaluation observations.
+- Treat warm-up NaNs in `beta_126` and rolling market features explicitly; do not silently fill them with future-informed values. If a minimum-feature/row eligibility policy is required, follow the stage specification and document the policy.
+- Keep variant-specific outputs variant-namespaced using the existing helpers in `src/nasdaq100/paths.py` unless a later stage explicitly changes the convention.
+- The raw archive's survivorship limitation must remain visible in reports and claims.
 
-| Check | Result | Note |
-|---|---|---|
-| Baseline (S3 tree) in the assistant's sandbox | 141/141 passed (not needs_data, not slow) | Calibration of the stand-ins below |
-| `pytest -m "not needs_data and not slow"` (sandbox) | 178 passed | 141 (S0-S3) + 37 new |
-| `pytest -m leakage` (sandbox) | 26 passed | 8 (L2, L3) + 18 new (L1 label poisoned-future, parametrised over h = 1, 5, 20) |
-| `pytest -m needs_data` (sandbox, real archive) | 46 passed | 38 (S1-S3) + 8 new; full tree 224 passed |
-| CLI `ingest`, `validate`, `build-master`, `build-universe`, `build-adjusted`, `build-labels` (sandbox, real archive) | Work | Isolated copy of the repo layout |
-| Mutation checks (sandbox) | 18 of 20 caught; the other 2 are equivalent mutants | Entry at `t`, exit off by one (two ways), mean over all rows, eligibility dropped, no minimum-names rule (and off by one), `y_cls >= 0`, flipped rank, pooled cross-date mean, no clipping, clipped `excess`, standardised `y_reg`, `has_label` ignoring prices, no contiguity assertion, cross-ticker exit shift, close-to-close labels, swapped clip bounds. Equivalent: dropping the `exit_idx <= last_idx` clause (a missing price already implies it) and an ungrouped entry shift (the grouped exit is NaN on the same rows) |
-| Ruff | Not run | Unavailable offline; AST check for unused imports and a line-length/whitespace check found nothing. **Run `ruff check .` locally.** |
-| **Local run with real dependencies** | Pending | Sandbox used **stand-ins** for pydantic, the parquet engine (pickle) and pytest (mini runner); pandas 3.0.2, Python 3.12. **Re-run locally and record here.** |
+### Known deviations or limitations to preserve/document
 
-**Interpretations of the guide (none change a schema):**
-1. `labels.parquet` has exactly the section II.5 columns: no `t_idx`, `eligible` or flags (join the calendar, `universe.parquet` or silver when needed), as for `universe.parquet`.
-2. `ret_fwd_h{h}` is kept for ineligible rows (the guide allows it, for diagnostics); it is NaN exactly where `has_label_h{h}` is False. `excess_h`, `y_reg_h`, `y_cls_h`, `rank_pct_h` are NaN on every ineligible, unlabelled or thin-date row; `y_cls_h` is float64 (0.0, 1.0, NaN). `label_exit_idx_h` (int32) and `has_label_h` (bool) are always populated.
-3. Quantiles for the `y_reg_h` clip use pandas' default linear interpolation over the eligible labelled names of the date; `rank_pct_h` uses average ranks for ties (`rank(pct=True)`), so ranks lie in (0, 1].
-4. The 20-name minimum is the module constant `MIN_CROSS_SECTION` (no config key; `config.py` is unchanged), overridable through the keyword `min_names` for tests. Dates with 1 to 19 eligible labelled names raise one warning per horizon; dates with none (the 252-date seasoning period and the trailing horizon) are logged at info level, because they occur on every run.
-5. `adjusted_prices.parquet` and `universe.parquet` must have identical (ticker, date) keys, `t_idx` must agree with the calendar and be consecutive within each ticker; otherwise `LabelError` (exit 1 from the CLI). `labels.primary_horizon` must be in `labels.horizons`; `labels.winsor_pct` must be `[lo, hi]` with `0 <= lo < hi <= 1`.
-6. `has_label_h` is computed from the calendar end and price existence only, independent of eligibility.
-7. No locked-test guard (D19) and no dev label masking (L7): those belong to S6/S16, which must wrap `load_labels`. No `experiments/registry.csv` row is written (no experiment results), consistent with S1 to S3.
-8. `make features` already lists `build-labels`; `make data` is unchanged and does not run it (the guide's `make all` order places `build-labels` after `build-universe`).
+1. **Fold-plan path mismatch:** `check-leakage` currently writes via `paths.fold_plan_path(variant)` to `artifacts/{variant}/fold_plan.json` (for the base variant, `artifacts/base/fold_plan.json`). The guide and `.gitignore` refer to `artifacts/fold_plan.json`. This deviation is known and documented; do not silently claim the paths are identical or change them incidentally during S7.
+2. **Process-local locked-test token:** S6 token validation is a deliberate-access guard, not a cryptographic security boundary. The token is valid only in the issuing process; opening the test is logged in the protocol. S16 owns the controlled locked-test workflow and any rerun bookkeeping.
+3. **Structural allow-list:** Current structural checks limit `open_locked_test` usage to `src/nasdaq100/validation/guards.py`. S16 must intentionally extend the allow-list for the approved locked-test command; pre-S16 stages must not.
+4. **Lower-level readers:** The S4/S5 lower-level loaders still exist for pipeline/building-block uses and are not themselves guarded. `load_panel` is the only supported entry point for modelling/evaluation code from S7 onward.
+5. **Warm-up rows:** The first training period may contain NaNs in rolling/market features. The stage requiring model fitting must make its missing-feature policy explicit instead of assuming those values are all finite.
+6. **Configuration/environment:** The local development environment uses Python 3.14; the project's CI matrix recorded in the earlier state was Python 3.11 and 3.12. Compatibility of packages that may be needed in later stages (for example, LightGBM/SHAP on Python 3.14) has not been established by S6.
+7. **Earlier-stage verification detail:** The previous version of this file contained inconsistent “locally verified” checklist statuses next to “local pending” rows and old sandbox test results for S0–S4. Those stale claims are intentionally not carried forward as evidence. Implementation commit history is retained; exact historical local totals should only be added if supported by actual local logs.
 
-**Observations for later stages (informational):**
-- A label at `t` depends on `adj_open` at `t+1` and `t+1+h` of the same ticker and on the same-date cross-section; changing one open moves labels only on dates `j-1` and `j-1-h` (tested exactly). S6 purge/embargo must use `label_exit_idx_h`.
-- `excess_h20` has a standard deviation of about 0.085 over 20 trading days; `y_reg_h20` (clipped) is about 0.080.
+## 6. Important project files and commands
 
+| Path | Purpose / status |
+|---|---|
+| `MASTER_PROJECT_BUILD_GUIDE.md` | Authoritative stage plan and requirements. Read the full S7 section before planning or implementing S7. |
+| `PROJECT_STATE.md` | This living implementation status and handoff. |
+| `configs/base.yaml` | Default configuration. |
+| `src/nasdaq100/config.py` | Configuration loading and hashing. |
+| `src/nasdaq100/paths.py` | Variant-namespaced artifact/data paths. |
+| `src/nasdaq100/cli.py` | CLI entry point; includes `status`, S1–S6 data commands and `check-leakage`. Commands for later stages may still be stubs. |
+| `src/nasdaq100/data/loaders.py` | S6 `load_panel` and panel builder; required for S7+ modelling/evaluation reads. |
+| `src/nasdaq100/validation/folds.py` | Fold and fold-plan logic. |
+| `src/nasdaq100/validation/guards.py` | Locked-test guard and protocol/token operations. |
+| `src/nasdaq100/validation/leakage.py` | Leakage-validation helpers. |
+| `docs/data_dictionary.md` | Column-level documentation for processed tables, features, labels, panel and fold plan. |
+| `docs/survivorship.md` | Survivorship evidence and claims policy. |
+| `data/reference/security_master_curated.csv` | Tracked hand-curated security-master exceptions. |
+| `tests/` | Unit, leakage and integration tests. `needs_data` tests exercise the real local archive; check the marker before interpreting test totals. |
+| `experiments/registry.csv` | Append-only experiment registry; header-only so far. Data build stages have not added rows. |
 
-### S5: Feature engineering: implemented and locally verified
+Useful verified CLI commands as of S6:
 
-**Delivered:**
-- `src/nasdaq100/features/registry.py`: 24 registered MVP features with feature specs, families, required-feature checks and registry validation.
-- `src/nasdaq100/features/stock_features.py`: 18 stock-level features with trailing-window calculations and causal two-pass beta.
-- `src/nasdaq100/features/market_features.py`: six market-level features and point-in-time eligible-name market aggregation.
-- `src/nasdaq100/features/normalize.py`: eligible-only, per-date winsorisation and rank-Gauss transformation with average ranks for ties.
-- `src/nasdaq100/features/build.py`: feature-building orchestrator and loaders; writes raw/model feature panels and market series without dropping rows.
-- `src/nasdaq100/cli.py`: `build-features` command with config validation and failure handling.
-- `docs/data_dictionary.md`: S5 feature documentation.
-- Tests covering registry, stock features, market features, normalisation, orchestration, CLI, documentation, real-data integration and leakage/poisoned-future cases.
+```powershell
+python -m nasdaq100.cli status
+python -m nasdaq100.cli ingest
+python -m nasdaq100.cli validate
+python -m nasdaq100.cli build-master
+python -m nasdaq100.cli build-universe
+python -m nasdaq100.cli build-adjusted
+python -m nasdaq100.cli build-labels
+python -m nasdaq100.cli build-features
+python -m nasdaq100.cli check-leakage
+```
 
-**Verification record:**
+Run commands from the repository root with the intended virtual environment activated. Some later-stage commands are expected to remain stubs until their stage is implemented.
 
-| Check | Result | Note |
-|---|---|---|
-| `ruff check .` | ✅ Passed | Clean local run with Ruff. |
-| `git diff --check` | ✅ Passed | No whitespace errors. |
-| S5 test suite | ✅ Passed | All locally run S5 tests produced the expected results. |
-| Real-data feature build | ✅ Passed | Built successfully against the real frozen archive. |
-| Leakage tests | ✅ Passed | Future-poisoning and per-date rank-Gauss checks passed. |
+## 7. Standard stage workflow (repeat for every stage)
 
-**Real-data observations:**
-- Feature construction preserves the full 514,075-row panel; rows are not dropped.
-- Stock and market features use causal/trailing information only.
-- Stock features have expected warm-up NaNs.
-- Market features have expected seasoning/warm-up NaNs.
-- Normalisation is performed per date over eligible names only.
-- `beta_126` is undefined during its initial trailing window, as expected.
-- Market aggregation uses names eligible at `t-1`, avoiding contemporaneous eligibility look-ahead.
+### Before asking Claude for the next stage
 
-**S5 caveats / boundaries:**
-1. Market-series warm-up periods naturally contain NaNs.
-2. `check-leakage` is not implemented in S5; the dedicated leakage pytest suite provides S5 leakage coverage. The broader validation framework belongs to S6.
-3. Locked-test / D19 protection is not introduced in S5; it belongs to S6/S16.
-4. The existing frozen dataset remains explicitly survivorship-biased; S5 does not change that data-quality limitation.
-5. No experiment registry row is written because S5 produces features rather than experiment results.
+1. Confirm the latest branch state locally. Use `git status -sb`, `git log -1 --oneline`, and fetch/compare with `origin/master` as appropriate. Start from a clean working tree and the latest pushed commit.
+2. Provide Claude the current `MASTER_PROJECT_BUILD_GUIDE.md`, this `PROJECT_STATE.md`, and the intended stage handoff/archive. State explicitly which stage is in scope and which future stages are out of scope.
+3. Ask for a patch against the provided committed base. Do not let the patch describe sandbox results as owner-local test results.
 
-**Interpretations of the guide (none changes a schema):**
-1. The market series is NaN until the first name is eligible (no composition exists), so `mkt_logret` and `mkt_index` are NaN for the initial period. Consequently, `beta_126` and the windowed market features have their expected warm-up NaNs. The needs_data "first valid date 2001-01-02" is interpreted as the first eligible date with the other stock-level features defined.
-2. `mkt_index` is `exp(cumsum(mkt_logret))`, with the market series remaining NaN while `mkt_logret` is NaN. The implemented column name is `n_eligible`; the guide text calls it `n_eligible_t`.
-3. Standard deviations use sample (`ddof=1`) behavior. `beta_126` uses sample moments and is NaN when its required return window is incomplete or market variance is numerically zero. Log-based volume/liquidity features return NaN rather than infinity when their logarithm argument is invalid.
-4. `mkt_breadth_50` divides by eligible names with a defined `px_sma_50`; `xs_disp_21` is the sample standard deviation of `ret_21` over eligible names and requires at least two observations.
-5. Winsorisation is applied per date to eligible, non-NaN values before rank-Gauss transformation. With the current cross-section size, the specified 1%/99% clipping generally does not alter the rank ordering, but the implementation remains spec-faithful.
-6. Market-level features are copied to every row for their date, including ineligible rows, because they are date-level features. Stock-level features for ineligible rows remain NaN.
-7. The workflow mentions `check-leakage` for S5, but the CLI assignment places it in S6+. S5 therefore provides dedicated leakage tests rather than implementing the broader `check-leakage` command.
-8. `features/build.py` is a thin orchestration addition beyond the guide's explicitly listed feature files. S5 does not write an `experiments/registry.csv` row or apply the D19 locked-test guard; those concerns belong to later stages.
+### After receiving and applying the stage patch locally
 
-**Observations for later stages (informational):**
-- `beta_126` and market-window features naturally contain warm-up NaNs. S6/S8 should explicitly decide whether any minimum-feature rule is required.
-- `features_model` contains per-date rank-Gauss-transformed stock-level features; `features_raw` and `features_model` should not be mixed casually in a model pipeline.
-- The existing dataset remains explicitly survivorship-biased; S5 does not change that limitation.
+1. Review the patch/stat and apply it to the clean branch.
+2. Run the required tests and CLI checks locally in the real `.venv`, including relevant `needs_data` integration tests when the real archive is available, leakage tests, Ruff, and `git diff --check`. Capture the actual commands and final output. Run additional tests required by the stage guide.
+3. Fix failures before treating the stage as complete. Update `PROJECT_STATE.md` locally with **observed** verification evidence only; no guessed or copied sandbox counts.
+4. Commit and push the stage implementation. Verify the push and remote branch state. Record the stage implementation commit hash in the state file.
+5. Make the final documentation-only update to `PROJECT_STATE.md`, reconcile outdated earlier-stage statuses/next steps, then commit and push that documentation update before starting the next stage.
+6. Read the final state file from the pushed branch before creating the next stage handoff. Git history, not a hard-coded “current HEAD” field in this file, is the source of truth for the latest hash.
 
-**Milestone:** S5 establishes the clean labelled feature panel required for M1.
+### What the stage verification table should contain
 
-### S6: Validation framework (splits, locked-test guard, leakage tooling): implemented and locally verified
+For each stage, record only relevant checks and distinguish these fields:
 
-**Baseline:** M1, commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (S0-S5 complete). S6 implementation commit: `ac02dbb` (committed locally; push pending).
+- **Command/check** (exact spelling and marker).
+- **Observed result** (exact count/status).
+- **Environment/data** (real local `.venv`, Python version, frozen archive used where applicable).
+- **Stage implementation commit** and whether the push was confirmed.
 
-**Scope and delivered components** (Master Guide Part III S6):
-- `src/nasdaq100/validation/folds.py`: `Fold` (`fold_id, kind, test_year, test_start_idx, test_end_idx, train_core_idx, calib_idx, gap, train_end_idx, base_rate`), `make_fold` (the algorithm for one test period), `make_dev_folds(cfg)` (12 folds, test years 2008-2019), `make_tuning_folds(cfg)` (validation years 2005-2007, no calibration block, `t <= tuning_max_idx`), `make_locked_folds(cfg, token)` (2020-2026, needs the guard token), `build_fold_plan` / `write_fold_plan`, `purge_gap`, `year_bounds`.
-- `src/nasdaq100/validation/guards.py`: `LockedTestError`, `assert_not_locked(dates_or_idx, cfg=None, *, calendar=None, token=None)`, `open_locked_test(cfg, protocol_file=None)` (checks `frozen == true`, records `test_opened` / `test_opened_at`, logs a warning, returns a `LockedAccessToken`), `require_token`, `is_valid_token`, and the boundary helpers `locked_start_idx`, `last_dev_label_idx` (5009), `tuning_max_idx` (1988).
-- `src/nasdaq100/validation/leakage.py`: `assert_folds_valid`, `poison_future(panel, t_idx)`, `null_panel_test(pipeline_fn, seeds, panel_factory=None)` (skeleton for S8), `SpyEstimator` (max `t_idx` seen in `fit`, for S8), `run_leakage_suite`, `LeakageError`.
-- `src/nasdaq100/data/loaders.py`: `load_panel(cfg, features, split, labels=True, *, token=None, ...)` and the pure `build_panel`.
-- CLI `check-leakage` (config validated first): writes `artifacts/{variant}/fold_plan.json`, then runs `pytest -m leakage`; exit 0 only if the plan was written and every leakage test passed.
-- Tests: `tests/unit/test_{folds,guards,loaders,leakage_tools,cli_s6}.py`, `tests/leakage/test_{fold_validity,dev_label_masking,locked_guard}.py` (L6, L7, L8), `tests/integration/test_s6_real_data.py` (`needs_data`), fixtures `tests/fixtures/s6_validation.py`. `docs/data_dictionary.md` documents the `load_panel` panel and `fold_plan.json`.
+Do not copy the whole assistant-sandbox test table into the main project state. If a sandbox result is useful for historical context, place it in a separate clearly labelled note and never use it as evidence that the owner's local checks passed.
 
-**Files modified (S0-S5 files):** `src/nasdaq100/cli.py` (three imports, `cmd_check_leakage`, one dispatch branch; the `check-leakage` parser entry already existed) and `docs/data_dictionary.md` (two sections appended). No S0-S5 behaviour changes: no config, path, test or data changes; `load_labels`, `load_features_model`, `load_features_raw`, `load_universe` are unchanged and remain unguarded building blocks (see interpretation 8).
+## 8. Exact next step: prepare S7
 
-**Real-calendar results (assistant's sandbox, real archive, stand-in parquet engine):** locked start `t_idx` 5031 (2020-01-02); last dev date 5030 (2019-12-31); `last_dev_label_idx` 5009 (2019-11-29); `tuning_max_idx` 1988 (2007-11-29); `first_train_idx` 252; gap 26. Dev fold 2008: `t0` 2010, `train_end` 1983 (2007-11-21), calibration `[1480, 1983]` and core `[252, 1453]` before stride (guide worked example; with `train_stride=5` the blocks are `[1482, 1982]` with 101 dates and `[252, 1452]` with 241 dates; core span 1,201-1,202 dates, about 4.8 years). 12 dev folds (test years 2008-2019, last test date 2019-12-31), 3 tuning folds (2005, 2006, 2007; the last ends at 1988), 7 locked folds (2020-2026, last test date 2026-02-18). Dev panel: last date 2019-12-31, labels NaN and `has_label_h20` False for `t_idx` 5010-5030, features kept; tuning panel ends at `t_idx` 1988; `load_panel("locked")` raises without a token and returns all 6,571 dates with 511,975 labelled rows with one.
-
-**Acceptance criteria:**
-
-| Criterion (guide) | Met | Evidence |
-|---|---|---|
-| Property tests pass (folds valid, exact gap, off-by-one, worked example, stride, rolling window) | Yes (sandbox) | `tests/leakage/test_fold_validity.py` (60 random draws of calendar, h in {5, 20, 60}, embargo, calibration, stride, window, checked against an independent re-derivation), `tests/unit/test_folds.py` |
-| Gap formula exact; row at `t0 - gap - 1` allowed, `t0 - gap` not | Yes | `test_gap_off_by_one_for_every_horizon`, `test_off_by_one_row_at_t0_minus_gap_minus_1_allowed_t0_minus_gap_blocked` |
-| Dev folds never include dates on or after 2020-01-02, also as training rows | Yes | L6 tests, `assert_folds_valid(..., locked_start_idx=5031)` on the real calendar |
-| Loader NaN-masks dev labels beyond 5009; dev data contain no date >= 2020-01-02 (L7) | Yes | `tests/leakage/test_dev_label_masking.py`, real-data test |
-| `load_panel("locked")` raises without protocol and with `frozen=false`; boundary 2019-12-31 allowed, 2020-01-02 blocked (L8) | Yes | `tests/leakage/test_locked_guard.py`, `tests/unit/test_guards.py` |
-| Tuning split ends at 1988 | Yes | `tests/unit/test_loaders.py`, real-data test |
-| `fold_plan.json` lists 12 dev folds with sensible sizes (fold 2008 core about 4.8 years, about 1,200 dates before stride) | Yes (sandbox) | `check-leakage` wrote the plan; `tests/integration/test_s6_real_data.py` |
-| The guard cannot be bypassed via public loaders | Yes, by construction and by tests | Locked data need a token that only `open_locked_test` issues; structural tests: nothing in `src/` calls or imports `open_locked_test` except `guards.py`, and only `data/loaders.py` imports `load_labels` / `load_features_model` / `load_features_raw` |
-| Committed as `S6: validation framework and locked-test guard` | Yes (local) | ac02dbb |
-
-**Verification record:**
-
-| Check | Result | Note |
-|---|---|---|
-| Baseline (M1 tree) in the assistant's sandbox | 337/337 passed | Calibration of the stand-ins below |
-| `pytest -m "not needs_data and not slow"` (sandbox) | 411 passed | 282 (S0-S5) + 129 new |
-| `pytest -m leakage` (sandbox) | 169 passed | 91 (L1-L5) + 78 new (L6, L7, L8) |
-| `pytest -m needs_data` (sandbox, real archive) | 62 passed | 55 (S1-S5) + 7 new; full tree 473 passed |
-| `python -m nasdaq100.cli check-leakage` (sandbox) | Fold plan written; the pytest step could not run | The sandbox `pytest` is a stand-in without `python -m pytest`; **run it locally** |
-| Mutation checks (sandbox) | 30 of 30 caught | Off-by-one gap / train_end / calibration / core purge, stride anchor, window, tuning cap, locked start clamp, boundary comparisons, frozen check, token validity, mask cap and flags, split filters, guard removals, validity-check weakening. One genuine gap (locked start not clamped to the configured lock) found and closed with a test |
-| Ruff | Not run | Unavailable offline; AST scans for unused imports, `zip(strict=)`, constant `getattr` and whitespace found nothing. **Run `ruff check .` locally** |
-| **Local run with real dependencies (Windows .venv)** | Passed | 411 regular tests passed; 169 leakage tests passed; `check-leakage` generated the fold plan; 62 real-data tests passed; `ruff check .` and `git diff --check` passed. Fold example `dev_2008` matched the expected values. |
-
-**Interpretations of the guide (none changes a schema or an earlier stage):**
-1. `load_panel` adds a `t_idx` column (int32, from the calendar) to the join of `features_model`, `labels` and `eligible`: folds are defined on `t_idx`. It verifies that `labels`, `features_model` and `universe` have identical keys and identical `eligible` before joining. Column order: `ticker, date, t_idx, eligible`, features, the seven primary-horizon label columns.
-2. `split="locked"` returns the complete panel (all dates, true labels) and only with a valid token: the S16 folds 2021-2026 train on earlier locked years (guide S16). `split="dev"` and `"tuning"` additionally run `assert_not_locked` on their output.
-3. In dev mode `label_exit_idx_h20` is not masked (an integer calendar number, not price information); `ret_fwd`, `excess`, `y_reg`, `y_cls`, `rank_pct` are NaN and `has_label` False for `t_idx > 5009`.
-4. `fold_plan.json` is written with the existing `paths.fold_plan_path(variant)`, i.e. `artifacts/{variant}/fold_plan.json` (`artifacts/base/fold_plan.json`), keeping S0's variant namespacing. The guide and `.gitignore` name `artifacts/fold_plan.json` (the only fold-plan path exempt from the artifacts ignore rule), so the file is git-ignored here; nothing changed in `paths.py` or `.gitignore`. It lists the dev and tuning folds and the boundary indices; locked folds are deliberately absent.
-5. `assert_not_locked` accepts dates or integer `t_idx` (resolved with a calendar, default the stored one); the boundary is on the decision date (>= `validation.locked_test_start`). A valid token disables the check.
-6. `open_locked_test(cfg, protocol_file=None)` writes `test_opened = true` and `test_opened_at` (UTC) into the protocol and never overwrites an earlier timestamp; tokens are valid only in the issuing process (`_ISSUED_NONCES`), which makes peeking a deliberate and logged act, not a cryptographic barrier. Rerun flagging (`rerun_count`, L18) belongs to S16.
-7. `make_fold` thins both blocks by `(t_idx - first_train_idx) % train_stride == 0` (anchor `first_train_idx`, 252 by default); the test period is never thinned. Tuning folds restrict the validation dates to `t <= tuning_max_idx` (the 2007 fold ends at 1988) and have no calibration block. `first_train_idx` is the first trading date on or after `validation.first_train_decision_date`.
-8. The S4/S5 table readers remain public and unguarded; a structural test restricts their importers to `data/loaders.py`. S7 and later must read features and labels through `load_panel`. The same kind of test allows only `validation/guards.py` to mention `open_locked_test`: **S16 must extend that allow-list** with its `locked-test` command.
-9. `null_panel_test` is a skeleton: the pipeline returns `ic_by_date` (non-overlapping per-date ICs) and optionally `auc`; criteria from S8 (pooled mean IC within 2.5 SE, at most 20% of the runs with |t| > 2, mean AUC within 0.02 of 0.5, at least 10 seeds). Its default panel factory is the S0 `make_null_panel` (imported lazily from the test fixtures; pass `panel_factory` otherwise). `SpyEstimator.fit(X, y, t_idx=...)` takes the decision dates from the argument, a `t_idx` column or an index named `t_idx`.
-10. `check-leakage` runs `python -m pytest -m leakage -q` in a subprocess from the repository root; the sandbox could only verify the plan-writing half.
-
-**Observations for later stages (informational):**
-- Dev *predictions* are made on all eligible rows of each test year (including December 2019 where labels are masked); *evaluation* must use only rows with `has_label` (S7). The rebalance schedule and the dev backtest (S11) must not use decision dates after 2019-11-29 for evaluated results.
-- `beta_126` and market-window features have warm-up NaNs from 2001; with `first_train_decision_date` 2001-01-02 the first training rows have NaN market features. S8 must decide on a minimum-feature rule explicitly.
-- Fold training blocks hold decision dates; the trainer selects `eligible & has_label` rows within them. `Fold.base_rate` is filled at fit time (S8).
-- `tests/leakage` now holds L1-L8; `pytest -m leakage` is the gate for every later stage.
+1. Replace the repository's `PROJECT_STATE.md` with this version and review the diff. Run `git diff --check` after copying it into the working tree.
+2. Commit and push this documentation update (for example, commit message `docs: reconcile project state before S7`). This documentation commit will naturally become the latest `master` commit; do not add another commit solely to place that documentation commit's own hash inside itself.
+3. Verify that the documentation push succeeded and that local `master` matches `origin/master`.
+4. Build the S7 handoff from the latest pushed tree, including `MASTER_PROJECT_BUILD_GUIDE.md` and this `PROJECT_STATE.md`, while excluding `.git`, `.venv`, and generated outputs not needed for implementation. Follow the project's established handoff convention for the local raw archive.
+5. Begin **S7: Predictive evaluation library and baseline models** only. Read the guide's S7 section in full. Preserve S0–S6, use S6 folds and `load_panel`, do not open locked-test data, and do not implement S8+ work.
+6. After S7 implementation, run its local checks against the real environment/data, commit and push the implementation, then update and push this file with the actual S7 result before moving to S8.
