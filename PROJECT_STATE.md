@@ -1,4 +1,4 @@
-# Project State: AI-Driven Equity Research & Portfolio Decision Support System
+﻿# Project State: AI-Driven Equity Research & Portfolio Decision Support System
 
 > **Purpose:** This file is the concise, accurate handoff for the next implementation stage. `MASTER_PROJECT_BUILD_GUIDE.md` remains the authoritative specification for stage requirements. This file records what is implemented, verified, committed, known to differ from the guide, and what must happen next.
 >
@@ -10,44 +10,44 @@
 - **Repository:** <https://github.com/tanmaybaingane-rgb/ai-equity-research-system>
 - **Branch:** `master`
 - **Current stage:** S6 complete and pushed; **S7 has not started**.
-- **Last stage implementation commit:** `ac02dbb` — `S6: validation framework and locked-test guard` (pushed).
+- **Last stage implementation commit:** `ac02dbb` â€” `S6: validation framework and locked-test guard` (pushed).
 - **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (`7e0d5ab` in the commit list).
-- **Repository checkpoint before this state-file revision:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) — `docs: record S6 verification status`. The GitHub screenshots and the earlier local `git ls-remote` output show this checkpoint on `origin/master`.
+- **Repository checkpoint before this state-file revision:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) â€” `docs: record S6 verification status`. The GitHub screenshots and the earlier local `git ls-remote` output show this checkpoint on `origin/master`.
 - **Environment used for S6 verification:** Windows, Python 3.14, project `.venv`.
 - **Project path used in the local workflow:** `C:\Users\Asus\Projects\ai-equity-research-system`.
 - **Last updated:** 2026-10-12.
 
 **How to interpret the commit fields:** The commit containing a future revision of this file cannot record its own final hash without requiring another documentation commit. Therefore, this file records the last stage implementation commit and the checkpoint from which this revision was prepared; use `git log -1` and `git ls-remote origin refs/heads/master` for the exact current Git head. Git is authoritative for current branch state.
 
-## 2. Stage checklist
+## 2. Stage Checklist
 
 | Stage | Scope | Status | Implementation commit | Verification record in this file |
 |---|---|---|---|---|
-| S0 | Foundations, configuration, tooling | Complete and pushed | `93f1abb` foundations; `86767bb` close-out | Implementation, conventions, and remaining caveats: §4.1. Historical sandbox counts are not local evidence. |
-| S1 | Ingestion, validation, quality flags | Complete and pushed | `c251ae3` | Outputs, frozen-data rules, archive findings, and test inventory: §4.2. Historical metrics are labelled by provenance. |
-| S2 | Security master and universe | Complete and pushed | `102b7c8` | Curation, eligibility rules, universe counts, and test inventory: §4.3. |
-| S3 | Adjusted prices and returns | Complete and pushed | `bbde223` | Output schema, formulas, numerical edge-case handling, and test inventory: §4.4. |
-| S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: §4.5. |
-| S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: §4.6. |
-| S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: §4.7. The previous state-documentation checkpoint is `dd68e32`. |
-| S7 | Predictive evaluation library and baseline models | **Not started** | — | Next stage. Follow `MASTER_PROJECT_BUILD_GUIDE.md` for scope and acceptance criteria. |
-| S8 | Models, tuning, calibration, walk-forward training | Not started | — | Milestone M2. |
-| S9 | Signal engine | Not started | — | — |
-| S10 | Risk layer and portfolio construction | Not started | — | — |
-| S11 | Backtest engine: execution, costs, benchmarks | Not started | — | — |
-| S12 | Rule-based market regimes | Not started | — | — |
-| S13 | Strategy evaluation, ablations, robustness, development evidence | Not started | — | Milestone M3. |
-| S14 | Explainability | Not started | — | — |
-| S15 | Streamlit dashboard | Not started | — | — |
-| S16 | Locked test and final report | Not started | — | Milestone M4; single controlled run. See S6 constraints in §4.7 and §5. |
-| S17 | Packaging, documentation, reproducibility | Not started | — | — |
+| S0 | Foundations, configuration, tooling | Complete and pushed | `93f1abb` foundations; `86767bb` close-out | Implementation, conventions, and remaining caveats: Â§4.1. Historical sandbox counts are not local evidence. |
+| S1 | Ingestion, validation, quality flags | Complete and pushed | `c251ae3` | Outputs, frozen-data rules, archive findings, and test inventory: Â§4.2. Historical metrics are labelled by provenance. |
+| S2 | Security master and universe | Complete and pushed | `102b7c8` | Curation, eligibility rules, universe counts, and test inventory: Â§4.3. |
+| S3 | Adjusted prices and returns | Complete and pushed | `bbde223` | Output schema, formulas, numerical edge-case handling, and test inventory: Â§4.4. |
+| S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: Â§4.5. |
+| S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: Â§4.6. |
+| S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: Â§4.7. The previous state-documentation checkpoint is `dd68e32`. |
+| S7 | Predictive evaluation library and baseline models | **Not started** | â€” | Next stage. Follow `MASTER_PROJECT_BUILD_GUIDE.md` for scope and acceptance criteria. |
+| S8 | Models, tuning, calibration, walk-forward training | Not started | â€” | Milestone M2. |
+| S9 | Signal engine | Not started | â€” | â€” |
+| S10 | Risk layer and portfolio construction | Not started | â€” | â€” |
+| S11 | Backtest engine: execution, costs, benchmarks | Not started | â€” | â€” |
+| S12 | Rule-based market regimes | Not started | â€” | â€” |
+| S13 | Strategy evaluation, ablations, robustness, development evidence | Not started | â€” | Milestone M3. |
+| S14 | Explainability | Not started | â€” | â€” |
+| S15 | Streamlit dashboard | Not started | â€” | â€” |
+| S16 | Locked test and final report | Not started | â€” | Milestone M4; single controlled run. See S6 constraints in Â§4.7 and Â§5. |
+| S17 | Packaging, documentation, reproducibility | Not started | â€” | â€” |
 
 ### Verification evidence policy
 
 1. A stage's implementation being committed/pushed and that stage's local tests passing are separate facts; record both separately.
 2. Record exact commands run in the owner's real Windows `.venv`, their actual outputs, and whether the frozen real archive was used.
 3. **Assistant-sandbox results are not local verification.** If retained for historical context, label them explicitly as sandbox-only and keep them outside the authoritative local verification table. Sandbox use of dependency stand-ins is not equivalent to testing against the real installed dependencies.
-4. Do not leave “run locally”, “push pending”, or “awaiting local verification” notes once that work has actually been completed. Conversely, do not mark a check passed unless its real command was run and observed.
+4. Do not leave â€œrun locallyâ€, â€œpush pendingâ€, or â€œawaiting local verificationâ€ notes once that work has actually been completed. Conversely, do not mark a check passed unless its real command was run and observed.
 5. Marker-specific pytest results can overlap. Never add marker-suite counts and describe the sum as a unique full-suite count unless a command explicitly measured the full suite.
 6. If reliable older local logs are not available, say that detailed historic totals are unavailable rather than inventing them. This revision deliberately does not relabel old sandbox counts as local runs.
 
@@ -84,13 +84,13 @@ The project uses the frozen historical archive referenced by the S1 verification
 
 Rows are generally preserved through the pipeline; warm-up periods and unavailable forward labels are represented by NaNs/flags rather than dropping rows. Use the Master Build Guide and each module's contract for exact schemas.
 
-## 4. Completed stage history: S0–S6
+## 4. Completed stage history: S0â€“S6
 
 Use this section as the chronological record of what each completed stage introduced and which interfaces, decisions, and limitations later stages must preserve. The Master Project Build Guide remains the full specification; the repository implementation and tests are authoritative for what exists.
 
-**Verification provenance:** the original state file mixed local checklists with assistant-sandbox test tables and stale “run locally” instructions. Therefore, the summaries below preserve implementation facts and selected data observations, but do not reinterpret old sandbox results as local passes. Per-stage historical local test totals for S0–S4 are not reliably reconstructable from that file. S5's former record explicitly says its local lint, real-data build, leakage checks, and locally run S5 tests passed, but it did not record an aggregate test count. All future verification must be recorded from actual local command output.
+**Verification provenance:** the original state file mixed local checklists with assistant-sandbox test tables and stale â€œrun locallyâ€ instructions. Therefore, the summaries below preserve implementation facts and selected data observations, but do not reinterpret old sandbox results as local passes. Per-stage historical local test totals for S0â€“S4 are not reliably reconstructable from that file. S5's former record explicitly says its local lint, real-data build, leakage checks, and locally run S5 tests passed, but it did not record an aggregate test count. All future verification must be recorded from actual local command output.
 
-### 4.1 S0 — Foundations and repository conventions
+### 4.1 S0 â€” Foundations and repository conventions
 
 **Implementation checkpoints:** `93f1abb` (`S0: foundations`) and `86767bb` (`S0: close-out`), both present in the shared Git history.
 
@@ -114,12 +114,12 @@ Use this section as the chronological record of what each completed stage introd
 - Enum-like config strings are not fully validated at config load time; some stage builders validate their own accepted values.
 - The `status` CLI prints this project-state file. Commands for stages not yet implemented may still be stubs that exit nonzero.
 - Toy/planted fixtures were initially simpler than later modelling stages require; extend fixtures intentionally when the relevant stage calls for it.
-- Local development uses Windows/Python 3.14, while the recorded CI matrix is Python 3.11 and 3.12. Compatibility of later optional packages such as LightGBM/SHAP on Python 3.14 was not established by S0–S6. The virtual environment was created with `--system-site-packages`, so global packages may be visible.
+- Local development uses Windows/Python 3.14, while the recorded CI matrix is Python 3.11 and 3.12. Compatibility of later optional packages such as LightGBM/SHAP on Python 3.14 was not established by S0â€“S6. The virtual environment was created with `--system-site-packages`, so global packages may be visible.
 - A lock file, pre-commit configuration and Dockerfile were not included in S0; packaging/reproducibility belongs to S17.
 
 **Test/infrastructure inventory and old verification record:** `tests/unit/`, the `tests/fixtures/toy_data.py` generators, and `tests/conftest.py` are the foundation for subsequent stages. The original S0 log recorded `pip install -e ".[dev]"` as passed locally, 19 baseline tests passed at the initial `93f1abb` baseline, and `python -m nasdaq100.cli status` working. The later S0 close-out table reported 24 passing tests in the assistant sandbox using dependency stand-ins; that is not a local result. A clean final Ruff run after the S0 close-out was not captured in that older record. These facts describe the historical record only; use fresh local regression checks as the current verification.
 
-### 4.2 S1 — Data ingestion, validation and quality flags
+### 4.2 S1 â€” Data ingestion, validation and quality flags
 
 **Implementation commit:** `c251ae3` (`S1: ingestion, validation, flags`).
 
@@ -140,7 +140,7 @@ Use this section as the chronological record of what each completed stage introd
 - `Close` and `Adj Close` are rounded vendor values, so `adj_close / close` is noisy at low prices. Keep the minimum-close eligibility rule and corporate-action flags as distinct concerns; a flag is not itself a reason to silently drop a row.
 - Corporate-action-suspect events include documented reference events (KDP, BKR, MDLZ, TMUS) and other possible events; they are flags for downstream interpretation, not automatic corrections.
 
-### 4.3 S2 — Security master and per-date universe eligibility
+### 4.3 S2 â€” Security master and per-date universe eligibility
 
 **Implementation commit:** `102b7c8` (`S2: security master and universe`).
 
@@ -161,7 +161,7 @@ Use this section as the chronological record of what each completed stage introd
 - Universe rows that fail eligibility stay present with `eligible=False` and `fail_*` reasons. S1 quality flags stay in silver rather than being copied into the universe schema.
 - The current data do not provide a full historical point-in-time Nasdaq-100 membership history. The project must continue to disclose survivorship bias and must not overstate the universe as a fully historical membership reconstruction.
 
-### 4.4 S3 — Adjusted prices and close-to-close returns
+### 4.4 S3 â€” Adjusted prices and close-to-close returns
 
 **Implementation commit:** `bbde223` (`S3: adjusted series`).
 
@@ -178,7 +178,7 @@ Use this section as the chronological record of what each completed stage introd
 
 **Real-archive observations recorded by the earlier analysis (historical context):** output had 514,075 rows with keys matching the universe; exactly 100 first-row `logret_cc` NaNs were observed and none elsewhere; final-date `adj_factor` was 1.0 for every ticker; historical `logret_cc` extrema were approximately -0.833 to +0.562. Low-price rounding can make early-history close returns noisy; S2's `min_close` eligibility rule helps keep such rows out of the modelling panel.
 
-### 4.5 S4 — Forward-return and cross-sectional labels
+### 4.5 S4 â€” Forward-return and cross-sectional labels
 
 **Implementation commit:** `9dbc5ec` (`S4: label generation`).
 
@@ -195,7 +195,7 @@ Use this section as the chronological record of what each completed stage introd
 
 **Real-archive observations recorded by the earlier analysis (historical context):** the labels table had 514,075 rows; for `h=20`, 511,975 rows had forward returns (the trailing 21 rows per ticker lacked an exit price); 434,695 rows had cross-sectional labels; the first cross-sectional-label date was 2001-01-02; the recorded `y_cls_h20` mean was 0.5009, `excess_h20` standard deviation about 0.0853 and per-date excess means were numerically zero. The clipped regression target differed from excess on 12,596 rows in that analysis. These are historical real-archive observations, not proof of a particular current local command run.
 
-### 4.6 S5 — Feature engineering and M1 labelled feature panel
+### 4.6 S5 â€” Feature engineering and M1 labelled feature panel
 
 **Implementation commit / milestone:** `7e0d5ab` (`S5: feature engineering`), tagged M1. Full baseline hash: `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
 
@@ -223,11 +223,11 @@ Use this section as the chronological record of what each completed stage introd
 **M1 meaning:** S5 established the clean labelled feature panel needed as the starting point for predictive evaluation. S6 adds temporal validation and guarded panel access on top of this M1 baseline.
 
 
-### 4.7 S6 — Validation folds, locked-test guard, and leakage tooling
+### 4.7 S6 â€” Validation folds, locked-test guard, and leakage tooling
 
 **Baseline:** M1, S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
 
-**Implementation commit:** `ac02dbb` — `S6: validation framework and locked-test guard` (pushed to `origin/master`). The documentation checkpoint prepared for this revision is `dd68e32` — `docs: record S6 verification status`. The exact head advances when this revised state file is committed; use Git to confirm the newest hash.
+**Implementation commit:** `ac02dbb` â€” `S6: validation framework and locked-test guard` (pushed to `origin/master`). The documentation checkpoint prepared for this revision is `dd68e32` â€” `docs: record S6 verification status`. The exact head advances when this revised state file is committed; use Git to confirm the newest hash.
 
 **Delivered:**
 - `src/nasdaq100/validation/folds.py`: `Fold`, `make_fold`, `make_dev_folds`, `make_tuning_folds`, `make_locked_folds`, `build_fold_plan`, `write_fold_plan`, `purge_gap`, and `year_bounds`.
@@ -248,16 +248,16 @@ Use this section as the chronological record of what each completed stage introd
 | First training index under current configuration | `252` |
 | Current configured purge/embargo gap | `26` trading-calendar indices |
 
-- `make_dev_folds` creates 12 development folds for test years 2008–2019.
-- `make_tuning_folds` creates three folds for 2005–2007 without a calibration block; the final tuning fold is capped at `t_idx = 1988`.
-- The locked range spans 2020–2026, represented as seven locked folds. These folds are not listed in the ordinary development/tuning fold-plan output.
+- `make_dev_folds` creates 12 development folds for test years 2008â€“2019.
+- `make_tuning_folds` creates three folds for 2005â€“2007 without a calibration block; the final tuning fold is capped at `t_idx = 1988`.
+- The locked range spans 2020â€“2026, represented as seven locked folds. These folds are not listed in the ordinary development/tuning fold-plan output.
 - The locally inspected `dev_2008` plan showed `train_end_idx = 1983`, `gap = 26`, 241 sampled core dates, and 101 sampled calibration dates with the current stride. Treat these values as regression references for the present configuration, not constants for generic fold logic.
 
 **Loader and leakage contracts:**
 - Fold boundaries are defined on calendar `t_idx`. Fold builders use the configured calendar, horizon, gap, train stride, calibration settings, and window settings; do not replace this with row-count splits.
 - S7 and later modelling/evaluation code must read features and labels through `load_panel` and use the S6 folds. The lower-level S4/S5 readers still exist and are not themselves guarded; do not use them directly in new modelling/evaluation code.
 - `split="dev"` and `split="tuning"` enforce their temporal boundaries. In dev mode, true target fields (`ret_fwd`, `excess`, `y_reg`, `y_cls`, `rank_pct`) are masked beyond `t_idx = 5009`, and `has_label` is false there. `label_exit_idx_h20` remains an integer dependency index and is not price information.
-- `split="locked"` requires a valid token. `open_locked_test` checks the frozen-data configuration and records the opening event in the protocol. **Do not access/open locked-test data during S7–S15.** The deliberate open procedure belongs to S16.
+- `split="locked"` requires a valid token. `open_locked_test` checks the frozen-data configuration and records the opening event in the protocol. **Do not access/open locked-test data during S7â€“S15.** The deliberate open procedure belongs to S16.
 - Evaluate only rows with valid labels (`has_label`); predictions may exist for eligible decision rows whose future labels are unavailable/masked. Unlabelled rows are not negative labels and are not valid evaluation observations.
 - `null_panel_test` is a scaffold for S8: its intended pipeline result includes `ic_by_date` and may include `auc`. S8 must implement the guide's full null-panel acceptance criteria rather than assuming the scaffold alone proves validity.
 
@@ -279,7 +279,7 @@ Use this section as the chronological record of what each completed stage introd
 **Known S6 deviations and limitations:**
 1. **Fold-plan path mismatch:** the CLI uses `paths.fold_plan_path(variant)`, so the base-variant output is `artifacts/base/fold_plan.json`. The guide and `.gitignore` refer to `artifacts/fold_plan.json`. This discrepancy is known and documented; do not silently claim the paths match or change this convention incidentally during S7.
 2. **Process-local tokens:** the locked-test token registry is process-local. It is a deliberate-access guard with protocol logging, not a cryptographic barrier against a determined user.
-3. **Structural allow-list:** the current structural tests restrict use of `open_locked_test` to `src/nasdaq100/validation/guards.py`. S16 must intentionally extend the allow-list for its approved locked-test command; S7–S15 must not.
+3. **Structural allow-list:** the current structural tests restrict use of `open_locked_test` to `src/nasdaq100/validation/guards.py`. S16 must intentionally extend the allow-list for its approved locked-test command; S7â€“S15 must not.
 4. **Unchanged lower-level readers:** S6 did not rewrite `load_labels`, `load_features_model`, `load_features_raw`, or `load_universe` into guarded APIs. `load_panel` is the supported modelling/evaluation entry point.
 5. **CLI scope:** `check-leakage` runs `python -m pytest -m leakage -q` in a subprocess from the repository root. Its successful local run is recorded above; the old sandbox log did not independently verify the pytest subprocess half.
 6. **Warm-up features:** `beta_126` and rolling market features have legitimate warm-up NaNs. S7/S8 must explicitly follow the guide's policy for finite model inputs and evaluation samples; do not silently fill them with future-informed data.
@@ -287,7 +287,7 @@ Use this section as the chronological record of what each completed stage introd
 **Observations for later stages:**
 - Development predictions may be generated on eligible decision rows in each test year, including December 2019 rows whose forward labels are masked. Evaluation uses only valid labels. Development evaluation/backtest results must not treat decisions after `t_idx = 5009` as having observed 20-trading-day outcomes.
 - Fold training blocks define decision dates; the later trainer selects `eligible & has_label` observations within those blocks. `Fold.base_rate` is populated at fit time in S8.
-- S6 added only the `check-leakage` CLI implementation and panel/fold documentation to already-existing areas. The recorded S6 change did not intentionally change S0–S5 data schemas or pipeline behavior.
+- S6 added only the `check-leakage` CLI implementation and panel/fold documentation to already-existing areas. The recorded S6 change did not intentionally change S0â€“S5 data schemas or pipeline behavior.
 
 ---
 
@@ -312,7 +312,7 @@ Use this section as the chronological record of what each completed stage introd
 4. **Lower-level readers:** The S4/S5 lower-level loaders still exist for pipeline/building-block uses and are not themselves guarded. `load_panel` is the only supported entry point for modelling/evaluation code from S7 onward.
 5. **Warm-up rows:** The first training period may contain NaNs in rolling/market features. The stage requiring model fitting must make its missing-feature policy explicit instead of assuming those values are all finite.
 6. **Configuration/environment:** The local development environment uses Python 3.14; the project's CI matrix recorded in the earlier state was Python 3.11 and 3.12. Compatibility of packages that may be needed in later stages (for example, LightGBM/SHAP on Python 3.14) has not been established by S6.
-7. **Earlier-stage verification detail:** The previous version of this file contained inconsistent “locally verified” checklist statuses next to “local pending” rows and old sandbox test results for S0–S4. Those stale claims are intentionally not carried forward as evidence. Implementation commit history is retained; exact historical local totals should only be added if supported by actual local logs.
+7. **Earlier-stage verification detail:** The previous version of this file contained inconsistent â€œlocally verifiedâ€ checklist statuses next to â€œlocal pendingâ€ rows and old sandbox test results for S0â€“S4. Those stale claims are intentionally not carried forward as evidence. Implementation commit history is retained; exact historical local totals should only be added if supported by actual local logs.
 
 ## 6. Important project files and commands
 
@@ -323,7 +323,7 @@ Use this section as the chronological record of what each completed stage introd
 | `configs/base.yaml` | Default configuration. |
 | `src/nasdaq100/config.py` | Configuration loading and hashing. |
 | `src/nasdaq100/paths.py` | Variant-namespaced artifact/data paths. |
-| `src/nasdaq100/cli.py` | CLI entry point; includes `status`, S1–S6 data commands and `check-leakage`. Commands for later stages may still be stubs. |
+| `src/nasdaq100/cli.py` | CLI entry point; includes `status`, S1â€“S6 data commands and `check-leakage`. Commands for later stages may still be stubs. |
 | `src/nasdaq100/data/loaders.py` | S6 `load_panel` and panel builder; required for S7+ modelling/evaluation reads. |
 | `src/nasdaq100/validation/folds.py` | Fold and fold-plan logic. |
 | `src/nasdaq100/validation/guards.py` | Locked-test guard and protocol/token operations. |
@@ -365,7 +365,7 @@ Run commands from the repository root with the intended virtual environment acti
 3. Fix failures before treating the stage as complete. Update `PROJECT_STATE.md` locally with **observed** verification evidence only; no guessed or copied sandbox counts.
 4. Commit and push the stage implementation. Verify the push and remote branch state. Record the stage implementation commit hash in the state file.
 5. Make the final documentation-only update to `PROJECT_STATE.md`, reconcile outdated earlier-stage statuses/next steps, then commit and push that documentation update before starting the next stage.
-6. Read the final state file from the pushed branch before creating the next stage handoff. Git history, not a hard-coded “current HEAD” field in this file, is the source of truth for the latest hash.
+6. Read the final state file from the pushed branch before creating the next stage handoff. Git history, not a hard-coded â€œcurrent HEADâ€ field in this file, is the source of truth for the latest hash.
 
 ### What the stage verification table should contain
 
@@ -384,5 +384,6 @@ Do not copy the whole assistant-sandbox test table into the main project state. 
 2. Commit and push this documentation update (for example, commit message `docs: reconcile project state before S7`). This documentation commit will naturally become the latest `master` commit; do not add another commit solely to place that documentation commit's own hash inside itself.
 3. Verify that the documentation push succeeded and that local `master` matches `origin/master`.
 4. Build the S7 handoff from the latest pushed tree, including `MASTER_PROJECT_BUILD_GUIDE.md` and this `PROJECT_STATE.md`, while excluding `.git`, `.venv`, and generated outputs not needed for implementation. Follow the project's established handoff convention for the local raw archive.
-5. Begin **S7: Predictive evaluation library and baseline models** only. Read the guide's S7 section in full. Preserve S0–S6, use S6 folds and `load_panel`, do not open locked-test data, and do not implement S8+ work.
+5. Begin **S7: Predictive evaluation library and baseline models** only. Read the guide's S7 section in full. Preserve S0â€“S6, use S6 folds and `load_panel`, do not open locked-test data, and do not implement S8+ work.
 6. After S7 implementation, run its local checks against the real environment/data, commit and push the implementation, then update and push this file with the actual S7 result before moving to S8.
+
