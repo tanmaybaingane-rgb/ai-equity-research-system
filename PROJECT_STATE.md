@@ -7,17 +7,18 @@
 ## 1. Current project snapshot
 
 - **Project:** AI-driven equity research and portfolio decision support system.
-- **Repository:** <https://github.com/tanmaybaingane-rgb/ai-equity-research-system>
+- **Repository:** https://github.com/tanmaybaingane-rgb/ai-equity-research-system
 - **Branch:** `s7-evaluation-baselines`
-- **Current stage:** S7 implementation committed locally; verification recorded below. Push is pending..
-- **Last stage implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` — `S7: evaluation library and baselines` (local commit; push not yet verified).
-- **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (`7e0d5ab` in the commit list).
-- **Repository checkpoint before this state-file revision:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) â€” `docs: record S6 verification status`. The GitHub screenshots and the earlier local `git ls-remote` output show this checkpoint on `origin/master`.
-- **Environment used for S6 verification:** Windows, Python 3.14, project `.venv`.
+- **Current stage:** S7 implementation and local verification complete; remote push confirmation pending.
+- **Last stage implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` — `S7: evaluation library and baselines`.
+- **S7 state-file documentation commit:** `872d58f` — `S7: update PROJECT_STATE after verification` (verify its presence and remote status before treating it as pushed).
+- **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
+- **Historical repository checkpoint:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) — `docs: record S6 verification status`, previously recorded on `origin/master`. This is a historical checkpoint, not the current S7 branch head.
+- **Environment used for S7 verification:** Windows, Python 3.14, project `.venv`.
 - **Project path used in the local workflow:** `C:\Users\Asus\Projects\ai-equity-research-system`.
 - **Last updated:** 2026-10-14.
 
-**How to interpret the commit fields:** The commit containing a future revision of this file cannot record its own final hash without requiring another documentation commit. Therefore, this file records the last stage implementation commit and the checkpoint from which this revision was prepared; use `git log -1` and `git ls-remote origin refs/heads/master` for the exact current Git head. Git is authoritative for current branch state.
+**How to interpret the commit fields:** The stage implementation commit and state-file documentation commit are recorded separately. The latest Git commit hash cannot be recorded inside the same commit that introduces it without another documentation commit. Use `git log -1 --oneline`, `git branch -vv`, and `git ls-remote origin refs/heads/s7-evaluation-baselines` to verify the current local and remote state.
 
 ## 2. Stage Checklist
 
@@ -30,7 +31,7 @@
 | S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: Â§4.5. |
 | S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: Â§4.6. |
 | S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: Â§4.7. The previous state-documentation checkpoint is `dd68e32`. |
-| S7 | Predictive evaluation library and baseline models | **Implemented and committed locally; verification recorded in §4.8; push pending** | `b5736de` | Predictive metrics, statistical summaries, baseline models, CLI integration, tests, and development-only baseline evidence: §4.8. |
+| S7 | Predictive evaluation library and baseline models | **Implemented and locally verified; remote push confirmation pending** | `b5736de` | Predictive metrics, statistical summaries, baseline models, CLI integration, tests, and development-only baseline evidence: §4.8. |
 | S8 | Models, tuning, calibration, walk-forward training | Not started | â€” | Milestone M2. |
 | S9 | Signal engine | Not started | â€” | â€” |
 | S10 | Risk layer and portfolio construction | Not started | â€” | â€” |
@@ -292,7 +293,10 @@ Use this section as the chronological record of what each completed stage introd
 
 ### 4.8 S7 — Predictive evaluation library and baseline models
 
-**Implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` (`S7: evaluation library and baselines`). Committed locally on branch `s7-evaluation-baselines`; push status is pending.
+**Commit and remote status**
+- Implementation commit: `b5736de1936d232c44b520b040c25fb574a50b1b` (`S7: evaluation library and baselines`).
+- State-file documentation commit: `872d58f` (`S7: update PROJECT_STATE after verification`).
+- Local verification is recorded above. Remote push status must be confirmed against `origin/s7-evaluation-baselines` before S7 is marked pushed or S8 begins.
 
 **Implemented scope**
 - Predictive evaluation metrics and statistical summaries.
@@ -366,7 +370,7 @@ These are preliminary development-split rank-IC results, not return forecasts. T
 | `configs/base.yaml` | Default configuration. |
 | `src/nasdaq100/config.py` | Configuration loading and hashing. |
 | `src/nasdaq100/paths.py` | Variant-namespaced artifact/data paths. |
-| `src/nasdaq100/cli.py` | CLI entry point; includes `status`, S1â€“S6 data commands and `check-leakage`. Commands for later stages may still be stubs. |
+| `src/nasdaq100/cli.py` | CLI entry point; includes `status`, S1–S6 data commands, `check-leakage`, and the S7 `run-baselines` command. Commands for later stages may still be stubs. |
 | `src/nasdaq100/data/loaders.py` | S6 `load_panel` and panel builder; required for S7+ modelling/evaluation reads. |
 | `src/nasdaq100/validation/folds.py` | Fold and fold-plan logic. |
 | `src/nasdaq100/validation/guards.py` | Locked-test guard and protocol/token operations. |
@@ -375,9 +379,9 @@ These are preliminary development-split rank-IC results, not return forecasts. T
 | `docs/survivorship.md` | Survivorship evidence and claims policy. |
 | `data/reference/security_master_curated.csv` | Tracked hand-curated security-master exceptions. |
 | `tests/` | Unit, leakage and integration tests. `needs_data` tests exercise the real local archive; check the marker before interpreting test totals. |
-| `experiments/registry.csv` | Append-only experiment registry; header-only so far. Data build stages have not added rows. |
+| `experiments/registry.csv` | Append-only experiment registry. Contains four S7 baseline run records; data-build stages do not add experiment rows merely because they build tables. |
 
-Useful verified CLI commands as of S6:
+Useful CLI commands verified during S7 work:
 
 ```powershell
 python -m nasdaq100.cli status
@@ -389,6 +393,7 @@ python -m nasdaq100.cli build-adjusted
 python -m nasdaq100.cli build-labels
 python -m nasdaq100.cli build-features
 python -m nasdaq100.cli check-leakage
+python -m nasdaq100.cli run-baselines
 ```
 
 Run commands from the repository root with the intended virtual environment activated. Some later-stage commands are expected to remain stubs until their stage is implemented.
@@ -421,12 +426,39 @@ For each stage, record only relevant checks and distinguish these fields:
 
 Do not copy the whole assistant-sandbox test table into the main project state. If a sandbox result is useful for historical context, place it in a separate clearly labelled note and never use it as evidence that the owner's local checks passed.
 
-## 8. Exact next step: prepare S7
+## 8. Exact next step: close out S7 and prepare S8
 
-1. Replace the repository's `PROJECT_STATE.md` with this version and review the diff. Run `git diff --check` after copying it into the working tree.
-2. Commit and push this documentation update (for example, commit message `docs: reconcile project state before S7`). This documentation commit will naturally become the latest `master` commit; do not add another commit solely to place that documentation commit's own hash inside itself.
-3. Verify that the documentation push succeeded and that local `master` matches `origin/master`.
-4. Build the S7 handoff from the latest pushed tree, including `MASTER_PROJECT_BUILD_GUIDE.md` and this `PROJECT_STATE.md`, while excluding `.git`, `.venv`, and generated outputs not needed for implementation. Follow the project's established handoff convention for the local raw archive.
-5. Begin **S7: Predictive evaluation library and baseline models** only. Read the guide's S7 section in full. Preserve S0â€“S6, use S6 folds and `load_panel`, do not open locked-test data, and do not implement S8+ work.
-6. After S7 implementation, run its local checks against the real environment/data, commit and push the implementation, then update and push this file with the actual S7 result before moving to S8.
+### Step A — Confirm the S7 remote state
 
+1. Run `git status -sb`, `git log -3 --oneline`, and `git branch -vv` from the project root.
+2. Run `git fetch origin` and inspect `git ls-remote origin refs/heads/s7-evaluation-baselines`.
+3. Confirm that the S7 implementation commit `b5736de1936d232c44b520b040c25fb574a50b1b` exists on the remote branch.
+4. Confirm whether the state-file documentation commit `872d58f` is also present remotely. Do not assume either push succeeded without evidence.
+5. If the branch has unexpected changes or has diverged, inspect and reconcile them before pushing. Do not force-push or overwrite unrelated remote work.
+
+### Step B — Finalize and push this state file
+
+1. Reconcile §1, §2, and §4.8 with the actual local and remote Git state.
+2. Update §6 to describe the four S7 experiment records and the S7 `run-baselines` CLI command.
+3. Keep the recorded S7 metrics, test results, archive hash, and survivorship-bias caveat unchanged unless verified evidence requires a correction.
+4. Preserve the S0–S6 historical record. Correct visible text-encoding artefacts where practical without changing historical technical claims.
+5. Replace stale S7 preparation instructions with this S8 handoff.
+6. Run `git diff --check` and review `git diff -- PROJECT_STATE.md`.
+7. Commit the final state-file changes with a documentation-only commit, then push the branch.
+8. Verify the remote branch again and confirm that the final state-file commit is present.
+
+### Step C — Prepare the S8 handoff
+
+Only after S7 and the final state-file update are pushed and verified:
+
+1. Read the full S8 section of `MASTER_PROJECT_BUILD_GUIDE.md` and the final pushed `PROJECT_STATE.md`.
+2. Start from the latest pushed `s7-evaluation-baselines` branch with a clean working tree.
+3. Prepare a handoff scoped exclusively to **S8: Models, tuning, calibration, and walk-forward training**.
+4. Preserve the S6 fold definitions and use `src/nasdaq100/data/loaders.py::load_panel` for modelling/evaluation data access.
+5. Implement the guide's full S8 acceptance criteria, including its null-panel and leakage-validation requirements. Do not treat the existing S6 scaffold alone as proof of model validity.
+6. Do not access the locked test for tuning or model selection. The approved locked-test workflow belongs to S16.
+7. Do not implement S9 or later work early.
+
+### S8 completion requirements
+
+After S8 implementation, run the stage-required tests and checks in the owner's real local environment, record only observed results, commit and push the implementation, verify the remote branch, and then update and push `PROJECT_STATE.md` before beginning S9.
