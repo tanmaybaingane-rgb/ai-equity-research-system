@@ -301,6 +301,16 @@ def dev_reports_dir() -> Path:
     return reports_root_dir() / "dev"
 
 
+def baseline_metrics_path(variant: str = "base") -> Path:
+    """Return path to the S7 development table of baseline metrics.
+
+    ``reports/dev/baseline_metrics.csv`` for the base variant, ``baseline_metrics_{variant}.csv``
+    otherwise (so a variant run never overwrites the base report).
+    """
+    name = "baseline_metrics.csv" if variant == "base" else f"baseline_metrics_{variant}.csv"
+    return dev_reports_dir() / name
+
+
 def locked_reports_dir() -> Path:
     """Return path to reports/locked/ directory."""
     return reports_root_dir() / "locked"

@@ -149,3 +149,57 @@ Written by `python -m nasdaq100.cli check-leakage` to `artifacts/{variant}/fold_
 `train_end_idx` / `train_end_date`, and the `core` and `calibration` blocks (`n_dates` after the
 stride, start / end index and date, `span_days` before the stride). Locked folds are
 deliberately absent (they need the guard token).
+
+## `oof_predictions.parquet` of the S7 baselines (Stage S7)
+
+`python -m nasdaq100.cli run-baselines` writes one run directory per baseline,
+`artifacts/{variant}/runs/{run_id}/` (`run_id = {timestamp}_S7_{model_id}_{confighash8}`), with
+`config_resolved.json`, `oof_predictions.parquet`, `metrics_model.json` and `metrics_model.csv`.
+`oof_predictions.parquet` follows the prediction-table contract: `ticker`, `date`, `fold_id`,
+`model_id`, `pred_excess`, `prob_raw`, `prob_cal`, `rank_pct`, with one row per (`ticker`,
+`date`, `model_id`) for every **eligible** row of a development test year that has a computed
+score - including the final days whose labels are masked. `fold_id` is the test year (e.g. 2008);
+`prob_raw` and `prob_cal` are NaN; `rank_pct` is the per-date percentile rank of `pred_excess`
+(1 = best).
+
+| `model_id` | `pred_excess` (a raw score, **not** in return units) |
+|---|---|
+| `baseline_mom12_1` | `mom_12_1` (`features_raw`) |
+| `baseline_rev21` | `-ret_21` |
+| `baseline_lowvol` | `-vol_63` |
+| `baseline_random` | uniform [0, 1) noise keyed by (`project.seed`, date, ticker), independent of row order |
+
+Because the scores are not return forecasts, every baseline records `units_are_returns = false`
+(in `config_resolved.json`, `metrics_model.json`, the metrics tables and the registry notes); MAE
+and out-of-sample R^2 are NaN for them, and a downstream cost hurdle or probability gate must
+disable itself. Raw features are read through `load_panel(cfg, features, "dev", ...,
+features_file=features_raw_path(variant))`; the locked test is never opened.
+
+## Predictive metrics: `metrics_model.csv` and `reports/dev/baseline_metrics.csv` (Stage S7)
+
+`metrics_model.csv` has one `pooled` row, one row per test `year` and one per `fold`
+(`scope`, `group`); `reports/dev/baseline_metrics.csv` (`baseline_metrics_{variant}.csv` for other
+variants) stacks the `pooled` and `year` rows of all four baselines. Both carry `model_id`,
+`dataset_status` (always `SURVIVOR-BIASED`: the universe is a survivor-biased Nasdaq-100 sample,
+see `docs/survivorship.md`) and `units_are_returns`. Only rows with `eligible`, `has_label` and a
+finite label and prediction are evaluated; the label is the unclipped `excess_h{h}`.
+
+| Column | Meaning |
+|---|---|
+| `n_obs`, `n_dates` | evaluated (ticker, date) rows; dates with a finite daily rank IC (at least 20 names) |
+| `effective_n` | the dates of `n_dates` on the non-overlapping grid `(t_idx - 252) % 20 == 0` - the sample size behind the headline statistics |
+| `mean_ic`, `std_ic`, `ic_tstat`, `hit_rate` | rank IC (per-date Spearman of `pred_excess` and `excess`) over the non-overlapping dates; `ic_tstat = mean / (std / sqrt(effective_n))`; `hit_rate` = share of positive ICs |
+| `ic_ci_low`, `ic_ci_high` | 95 % iid-bootstrap interval of `mean_ic` (`evaluation.bootstrap_n` resamples, seed `project.seed`) |
+| `daily_mean_ic`, `daily_ic_nw_t` | secondary view: mean IC over all dates and its Newey-West (lag 20) t-statistic |
+| `mean_top_quintile`, `mean_bottom_quintile`, `mean_quintile_spread` | mean excess of the names with per-date `rank_pct >= 0.8` / `<= 0.2` and their difference (all dates) |
+| `spread_nonoverlap_mean`, `spread_nonoverlap_tstat` | the quintile spread on the non-overlapping dates and its t-statistic |
+| `mean_top_decile_excess` | mean excess of the names with `rank_pct >= 0.9` |
+| `mae`, `r2_oos` | mean absolute error and out-of-sample R^2 of `pred_excess` versus `excess` (NaN when `units_are_returns` is false) |
+
+For models with probabilities (S8 onwards), `evaluation.predictive.classification_metrics` adds
+pooled ROC-AUC, log-loss, Brier score, ECE (10 equal-frequency bins), calibration slope and
+intercept, the precision among the top-decile probabilities and a reliability table.
+`compare_models` tests the paired IC difference of two models on their common non-overlapping
+dates. Each `run-baselines` execution appends one row per baseline to `experiments/registry.csv`
+(`stage = S7`, `split = dev`, `counts_as_trial = true`, `key_metric_name =
+rank_ic_mean_nonoverlap`).

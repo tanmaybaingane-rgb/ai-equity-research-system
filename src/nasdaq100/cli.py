@@ -11,12 +11,15 @@ import sys
 from nasdaq100.config import Config, load_config
 from nasdaq100.data.adjust import AdjustError, run_build_adjusted
 from nasdaq100.data.ingest import IngestError, run_ingest
+from nasdaq100.data.loaders import LoaderError
 from nasdaq100.data.security_master import SecurityMasterError, run_build_master
 from nasdaq100.data.universe import UniverseError, run_build_universe
 from nasdaq100.data.validate import ValidationError, run_validate
+from nasdaq100.evaluation.predictive import PredictiveError
 from nasdaq100.features.build import feature_columns, run_build_features
 from nasdaq100.features.registry import FeatureError
 from nasdaq100.labels.forward_returns import LabelError, run_build_labels
+from nasdaq100.models.baselines import BaselineError, run_baselines
 from nasdaq100.paths import project_state_path
 from nasdaq100.utils.logging import get_logger
 from nasdaq100.validation.folds import FoldError, write_fold_plan
@@ -183,6 +186,36 @@ def cmd_check_leakage(cfg: Config) -> int:
     return 0 if plan_ok and code == 0 else 1
 
 
+def cmd_run_baselines(cfg: Config) -> int:
+    """S7: build and evaluate the four rule-based baselines on the development test years.
+
+    Writes one run directory per baseline, appends registry rows (``counts_as_trial=true``) and
+    writes ``reports/dev/baseline_metrics.csv``. Only development data is read; the locked test
+    is never opened.
+    """
+    try:
+        result = run_baselines(cfg)
+    except (
+        BaselineError, PredictiveError, LoaderError, FoldError, LockedTestError,
+        FeatureError, LabelError, UniverseError, FileNotFoundError,
+    ) as e:
+        logger.error(f"run-baselines failed: {e}")
+        return 1
+    pooled = result.metrics[result.metrics["scope"] == "pooled"]
+    for row in pooled.itertuples(index=False):
+        print(
+            f"{row.model_id}: rank IC {row.mean_ic:.4f} (t={row.ic_tstat:.2f}, 95% CI "
+            f"[{row.ic_ci_low:.4f}, {row.ic_ci_high:.4f}]), quintile spread "
+            f"{row.mean_quintile_spread:.4f}, effective_n={int(row.effective_n)}"
+        )
+    print(
+        f"Baseline metrics [variant={cfg.project.variant}] written to {result.report_path}. "
+        "Development results; scores are not return forecasts (units_are_returns=False). "
+        "Dataset status: SURVIVOR-BIASED"
+    )
+    return 0
+
+
 def cmd_not_implemented(cmd_name: str) -> int:
     """Fallback handler for stages not yet implemented."""
     print(f"Command '{cmd_name}' is defined in the roadmap but not yet implemented in the current stage.")
@@ -290,6 +323,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build_features(cfg)
     if args.command == "check-leakage":
         return cmd_check_leakage(cfg)
+    if args.command == "run-baselines":
+        return cmd_run_baselines(cfg)
 
     return cmd_not_implemented(args.command)
 
