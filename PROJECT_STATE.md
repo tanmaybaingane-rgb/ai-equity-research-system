@@ -8,14 +8,14 @@
 
 - **Project:** AI-driven equity research and portfolio decision support system.
 - **Repository:** <https://github.com/tanmaybaingane-rgb/ai-equity-research-system>
-- **Branch:** `master`
-- **Current stage:** S6 complete and pushed; **S7 has not started**.
-- **Last stage implementation commit:** `ac02dbb` â€” `S6: validation framework and locked-test guard` (pushed).
+- **Branch:** `s7-evaluation-baselines`
+- **Current stage:** S7 implementation committed locally; verification recorded below. Push is pending..
+- **Last stage implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` — `S7: evaluation library and baselines` (local commit; push not yet verified).
 - **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0` (`7e0d5ab` in the commit list).
 - **Repository checkpoint before this state-file revision:** `dd68e3215d213b64e382a4bea6525915c8c40514` (`dd68e32`) â€” `docs: record S6 verification status`. The GitHub screenshots and the earlier local `git ls-remote` output show this checkpoint on `origin/master`.
 - **Environment used for S6 verification:** Windows, Python 3.14, project `.venv`.
 - **Project path used in the local workflow:** `C:\Users\Asus\Projects\ai-equity-research-system`.
-- **Last updated:** 2026-10-12.
+- **Last updated:** 2026-10-14.
 
 **How to interpret the commit fields:** The commit containing a future revision of this file cannot record its own final hash without requiring another documentation commit. Therefore, this file records the last stage implementation commit and the checkpoint from which this revision was prepared; use `git log -1` and `git ls-remote origin refs/heads/master` for the exact current Git head. Git is authoritative for current branch state.
 
@@ -30,7 +30,7 @@
 | S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: Â§4.5. |
 | S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: Â§4.6. |
 | S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: Â§4.7. The previous state-documentation checkpoint is `dd68e32`. |
-| S7 | Predictive evaluation library and baseline models | **Not started** | â€” | Next stage. Follow `MASTER_PROJECT_BUILD_GUIDE.md` for scope and acceptance criteria. |
+| S7 | Predictive evaluation library and baseline models | **Implemented and committed locally; verification recorded in §4.8; push pending** | `b5736de` | Predictive metrics, statistical summaries, baseline models, CLI integration, tests, and development-only baseline evidence: §4.8. |
 | S8 | Models, tuning, calibration, walk-forward training | Not started | â€” | Milestone M2. |
 | S9 | Signal engine | Not started | â€” | â€” |
 | S10 | Risk layer and portfolio construction | Not started | â€” | â€” |
@@ -288,6 +288,49 @@ Use this section as the chronological record of what each completed stage introd
 - Development predictions may be generated on eligible decision rows in each test year, including December 2019 rows whose forward labels are masked. Evaluation uses only valid labels. Development evaluation/backtest results must not treat decisions after `t_idx = 5009` as having observed 20-trading-day outcomes.
 - Fold training blocks define decision dates; the later trainer selects `eligible & has_label` observations within those blocks. `Fold.base_rate` is populated at fit time in S8.
 - S6 added only the `check-leakage` CLI implementation and panel/fold documentation to already-existing areas. The recorded S6 change did not intentionally change S0â€“S5 data schemas or pipeline behavior.
+
+
+### 4.8 S7 — Predictive evaluation library and baseline models
+
+**Implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` (`S7: evaluation library and baselines`). Committed locally on branch `s7-evaluation-baselines`; push status is pending.
+
+**Implemented scope**
+- Predictive evaluation metrics and statistical summaries.
+- Baseline models: 12–1 momentum, 21-day reversal, low volatility, and random baseline.
+- CLI integration, data dictionary documentation, unit tests, and baseline leakage tests.
+- Development metrics written to `reports/dev/baseline_metrics.csv`.
+- Four run directories under `artifacts/base/runs/`, each containing `config_resolved.json`, `metrics_model.csv`, `metrics_model.json`, and `oof_predictions.parquet`.
+
+**Local verification**
+- Focused S7 tests: `61 passed in 33.54s`.
+- Non-data, non-slow suite: `472 passed, 62 deselected in 67.87s`.
+- `ruff check .`: passed.
+- `git diff --check`: passed.
+- `python -m nasdaq100.cli build-features`: passed using the local frozen raw archive; generated the base feature panels.
+- `python -m nasdaq100.cli run-baselines`: completed on the development split and recorded four S7 runs in `experiments/registry.csv`.
+
+**Recorded pooled development results**
+
+| Baseline | Mean rank IC | 95% confidence interval |
+|---|---:|---:|
+| 12–1 momentum | 0.0084 | [-0.0300, 0.0470] |
+| 21-day reversal | 0.0402 | [0.0086, 0.0704] |
+| Low volatility | -0.0293 | [-0.0671, 0.0122] |
+| Random | -0.0038 | [-0.0247, 0.0162] |
+
+These are preliminary development-split rank-IC results, not return forecasts. The run metadata records `units_are_returns=False`, `effective_n=150`, and `SURVIVOR-BIASED`. The reversal baseline has the highest pooled mean rank IC in this run, but this alone does not establish a deployable strategy or justify tuning against the locked test.
+
+**Baseline run IDs**
+- `20261014-211841_S7_baseline_mom12_1_57f31994`
+- `20261014-211841_S7_baseline_rev21_57f31994`
+- `20261014-211841_S7_baseline_lowvol_57f31994`
+- `20261014-211841_S7_baseline_random_57f31994`
+
+**Data and evaluation boundary**
+- Raw archive SHA-256: `e70ce876b218b8af9d891a3c47c471f2a039698614697c60b6be5ad32537e8d2`.
+- The archive's survivorship limitation remains material and must be reflected in all conclusions.
+- S7 baseline evaluation was run on development folds. The locked test must not be used for model selection or tuning before the approved S16 workflow.
+- The full implementation commit is local; push verification remains outstanding.
 
 ---
 
