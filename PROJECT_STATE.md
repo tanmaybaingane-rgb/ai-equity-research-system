@@ -9,7 +9,7 @@
 - **Project:** AI-driven equity research and portfolio decision support system.
 - **Repository:** https://github.com/tanmaybaingane-rgb/ai-equity-research-system
 - **Branch:** `s7-evaluation-baselines`
-- **Current stage:** S7 implementation and local verification complete; remote push confirmation pending.
+- **Current stage:** S7 implementation and local verification complete; locally verified, committed, pushed, and remotely confirmed.
 - **Last stage implementation commit:** `b5736de1936d232c44b520b040c25fb574a50b1b` — `S7: evaluation library and baselines`.
 - **S7 state-file documentation commit:** `872d58f` — `S7: update PROJECT_STATE after verification` (verify its presence and remote status before treating it as pushed).
 - **M1 baseline/tag:** S5 commit `7e0d5ab615ca9cb65b6f3ef494ceedac2ca750c0`.
@@ -31,7 +31,7 @@
 | S4 | Label generation | Complete and pushed | `9dbc5ec` | Label formulas, schemas, minimum cross-section rule, and leakage implications: Â§4.5. |
 | S5 | Feature engineering | Complete and pushed; M1 | `7e0d5ab` | Feature groups, normalisation, causal constraints, caveats, and known local verification summary: Â§4.6. |
 | S6 | Validation folds, locked-test guard, leakage tooling | **Complete, locally verified, committed and pushed** | `ac02dbb` | Implementation, fold contracts, local verification, and deviations: Â§4.7. The previous state-documentation checkpoint is `dd68e32`. |
-| S7 | Predictive evaluation library and baseline models | **Implemented and locally verified; remote push confirmation pending** | `b5736de` | Predictive metrics, statistical summaries, baseline models, CLI integration, tests, and development-only baseline evidence: §4.8. |
+| S7 | Predictive evaluation library and baseline models | **Implemented and locally verified; remote push confirmed** | `b5736de` | Predictive metrics, statistical summaries, baseline models, CLI integration, tests, and development-only baseline evidence: §4.8. |
 | S8 | Models, tuning, calibration, walk-forward training | Not started | â€” | Milestone M2. |
 | S9 | Signal engine | Not started | â€” | â€” |
 | S10 | Risk layer and portfolio construction | Not started | â€” | â€” |
@@ -365,7 +365,7 @@ These are preliminary development-split rank-IC results, not return forecasts. T
 
 | Path | Purpose / status |
 |---|---|
-| `MASTER_PROJECT_BUILD_GUIDE.md` | Authoritative stage plan and requirements. Read the full S7 section before planning or implementing S7. |
+| `MASTER_PROJECT_BUILD_GUIDE.md` | Authoritative stage plan and requirements. Read the full S8 section before planning or implementing S8. |
 | `PROJECT_STATE.md` | This living implementation status and handoff. |
 | `configs/base.yaml` | Default configuration. |
 | `src/nasdaq100/config.py` | Configuration loading and hashing. |
